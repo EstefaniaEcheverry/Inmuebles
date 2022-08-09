@@ -12,7 +12,7 @@ library(tidyr)
 library(ggtext)
 library(plotly)
 library(readxl)
-library(colmaps)
+#  library(colmaps)
 library(ggplot2)
 library(leaflet)
 library(stringr)
@@ -46,13 +46,13 @@ datos <- datos %>%
   rename(Longitud = localizaciones.long)
 
 # Estructura de los datos 
-datos %>% str()
+#datos %>% str()
 
 # Resumen de los datos 
-datos %>% summary() 
+#datos %>% summary() 
 
 #Cabeza de los datos 
-datos %>% head() 
+#datos %>% head() 
 
 #  Choices for selectInput 
 c1 = datos %>% select(c(15:17))%>%
@@ -61,7 +61,10 @@ c1 = datos %>% select(c(15:17))%>%
 #####################
 c2 = datos %>% select(c(5,9:11)) %>% 
   names()
-
+c3= unique(direccion_unique$Centro_de_Costos)
+c4= names(direccion_unique)
+n1<-length(c4)
+c4=c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
 
@@ -91,7 +94,13 @@ dashboardPage(
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'boxpl'",
                        selectInput(inputId ="var2" ,label= "Seleccione la variable",
                                    choices =c1 ,selected="Vr.Canon")),
-      menuItem(text= "Inmuebles Map",tabName = "map",icon = icon("map"))
+      menuItem(text= "Inmuebles Map",tabName = "map",icon = icon("map")),
+      conditionalPanel("input.sidebar == 'map'",
+                       selectInput(inputId ="var5" ,label= "Seleccione el Centro de Costos",
+                                   choices =c3,multiple = TRUE )) ,
+      conditionalPanel("input.sidebar == 'map'",
+                       selectInput(inputId ="var6" ,label= "Seleccione una columna de descripción por punto",
+                                   choices =c4,multiple = TRUE ))   
     )
   ),  
   dashboardBody(
@@ -145,21 +154,21 @@ dashboardPage(
       tabItem(tabName="map",
               tabBox(id="t3",width= 12,
                      tabPanel(title="Inmuebles",withSpinner(tmapOutput(outputId = "map_plot"))
-                              
-                              
-                              
+      
                      ),
-                     tabPanel(title="Laureles",withSpinner(tmapOutput(outputId = "maplaureles"))),
-                     tabPanel(title="Sabaneta",withSpinner(tmapOutput(outputId = "mapsabaneta"))),
-                     tabPanel(title="Poblado" ,withSpinner(tmapOutput(outputId = "mappoblado"))),
-                     tabPanel(title="Los Colores",withSpinner(tmapOutput(outputId = "mapcolores"))),
-                     tabPanel(title="Envigado",withSpinner(tmapOutput(outputId = "mapenvigado"))),
-                     tabPanel(title="Itagui",withSpinner(tmapOutput(outputId = "mapitagui"))),
-                     tabPanel(title="Centro",withSpinner(tmapOutput(outputId = "mapcentro"))),
-                     tabPanel(title="Bello" ,withSpinner(tmapOutput(outputId = "mapbello"))),
-                     tabPanel(title="La estrella" ,withSpinner(tmapOutput(outputId = "mapestrella"))),
-                     tabPanel(title="San Antonio Pr.",withSpinner(tmapOutput(outputId = "mapsanantonio"))),
-                     tabPanel(title="Calasanz",withSpinner(tmapOutput(outputId = "mapcalasanz"))))
+                     tabPanel(title="Bloqueados",withSpinner(tmapOutput(outputId = "map_plot_b"))
+                     #tabPanel(title="Laureles",withSpinner(tmapOutput(outputId = "maplaureles"))),
+                     #tabPanel(title="Sabaneta",withSpinner(tmapOutput(outputId = "mapsabaneta"))),
+                     #tabPanel(title="Poblado" ,withSpinner(tmapOutput(outputId = "mappoblado"))),
+                     #tabPanel(title="Los Colores",withSpinner(tmapOutput(outputId = "mapcolores"))),
+                     #tabPanel(title="Envigado",withSpinner(tmapOutput(outputId = "mapenvigado"))),
+                     #tabPanel(title="Itagui",withSpinner(tmapOutput(outputId = "mapitagui"))),
+                     #tabPanel(title="Centro",withSpinner(tmapOutput(outputId = "mapcentro"))),
+                     #tabPanel(title="Bello" ,withSpinner(tmapOutput(outputId = "mapbello"))),
+                     #tabPanel(title="La estrella" ,withSpinner(tmapOutput(outputId = "mapestrella"))),
+                     #tabPanel(title="San Antonio Pr.",withSpinner(tmapOutput(outputId = "mapsanantonio"))),
+                     #tabPanel(title="Calasanz",withSpinner(tmapOutput(outputId = "mapcalasanz")))
+                     ))
       )
     )
   )
@@ -186,7 +195,7 @@ server <- function(input, output, session) {
   )
   # DataTable
   output$dataInmu <- renderDataTable(
-    datos_unic
+    direccion_unique
   )
   
   
@@ -469,7 +478,7 @@ server <- function(input, output, session) {
                                   "COPACABANA",
                                   "BELLO",
                                   "SABANETA",
-                                  "LA ESTRELLA"  
+                                  "LA ESTRELLA" 
   )
   # Eliminar el Caldas que no es de Antioquia
   area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName 
@@ -477,235 +486,250 @@ server <- function(input, output, session) {
   ################## Mapas
   
   # Pasar los datos a formato sf tomando algunos datos de la base
-  direcciones_sf <- datos_unic %>% 
+  direcciones_sf <- direccion_unique %>% 
     st_as_sf(coords = c('Longitud', 'Latitud')) %>%
     st_set_crs(value = 4326) %>%
     st_transform(crs = 3857) %>%
     st_intersection(area_metropolitana)
   
-  
+#    tmap_mode('view') +
+#    tm_shape(shp = direcciones_sf)+ # coordenadas lat long
+    #tm_markers(size = 0.05,col = "Centro_de_Costos")#
+#      tm_dots(size = 0.05,col = "Centro_de_Costos",shape=25,popup.vars=c( "Direcciones_c" , "Nombre_del_Lugar","Total_de_apartamentos"))
   output$map_plot<- renderTmap({
+if (is.null(input$var5) ){
+      direcciones_sf_filtro<-direcciones_sf
+    }
+    else{
+      direcciones_sf_filtro<-direcciones_sf[is.element(direcciones_sf$Centro_de_Costos,input$var5),]      
+    }
+    if(is.null(input$var6)){
+      columnas_mostrar<-c4
+    }
+    else{
+      columnas_mostrar<-input$var6
+    }
     # Mapa del aréa metropolitana con los inmuebles 
     tmap_mode('view') %>%
-      tm_shape(shp = direcciones_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "skyblue")
+      tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
+      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
   })
   
   # Crear la base de datos para sf para visualizar el mapa
   # Pasar los datos a formato sf tomando algunos datos de la base
-  inmuebles_sf1 <- datos %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmuebles_sf1 <- datos %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
-  output$mapcolores<- renderTmap({
+##  output$mapcolores<- renderTmap({
     # Mapa del aréa metropolitana con los inmuebles 
-    tmap_mode('view') %>%
-      tm_shape(shp = inmuebles_sf1)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "CentroCostos")
-  })
+#    tmap_mode('view') %>%
+#      tm_shape(shp = inmuebles_sf1)+ # coordenadas lat long
+#      tm_dots(size = 0.05,col = "CentroCostos")
+#  })
   
   # Mapa por cada de uno de los Centros de costos por conjunto
   # Laureles
-  Laureles_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Laureles"), ]
+#  Laureles_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Laureles"), ]
   # Pasar los datos a formato sf tomando datos de Laureles
-  inmulaureles_sf <- Laureles_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmulaureles_sf <- Laureles_ %>% 
+ #   st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+ #   st_intersection(area_metropolitana)
   
   
-  output$maplaureles<- renderTmap({
+#  output$maplaureles<- renderTmap({
     # Mapa de solo centro de costos de Laureles
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmulaureles_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "purple")
-  })
+#    tm_shape(shp = inmulaureles_sf)+ # coordenadas lat long
+#      tm_dots(size = 0.05,col = "purple")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Sabaneta
-  Sabaneta_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Sabaneta"), ]
+ # Sabaneta_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Sabaneta"), ]
   # Pasar los datos a formato sf tomando datos de Sabaneta
-  inmusabaneta_sf <- Sabaneta_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmusabaneta_sf <- Sabaneta_ %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+ #   st_transform(crs = 3857) %>%
+ #   st_intersection(area_metropolitana)
   
-  output$mapsabaneta<- renderTmap({
-    # Mapa de solo centro de costos de Sabaneta
-    tmap_mode('view')
+#  output$mapsabaneta<- renderTmap({
+#    # Mapa de solo centro de costos de Sabaneta
+#    tmap_mode('view')
     
-    tm_shape(shp = inmusabaneta_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "coral2")
-  })
+#    tm_shape(shp = inmusabaneta_sf)+ # coordenadas lat long
+#      tm_dots(size = 0.05,col = "coral2")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Poblado
-  Poblado_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Poblado"), ]
+#  Poblado_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Poblado"), ]
   # Pasar los datos a formato sf tomando datos de Poblado
-  inmuPoblado_sf <- Poblado_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmuPoblado_sf <- Poblado_ %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
-  output$mappoblado<- renderTmap({
+#  output$mappoblado<- renderTmap({
     # Mapa de solo centro de costos de Sabaneta
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuPoblado_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "mediumseagreen")
-  })
+#    tm_shape(shp = inmuPoblado_sf)+ # coordenadas lat long
+#      tm_dots(size = 0.05,col = "mediumseagreen")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Colores
-  Colores_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Colores"), ]
+#  Colores_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Colores"), ]
   # Pasar los datos a formato sf tomando datos de Colores
-  inmuColores_sf <- Colores_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmuColores_sf <- Colores_ %>% 
+ #   st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
-  output$mapcolores<- renderTmap({
+#  output$mapcolores<- renderTmap({
     # Mapa de solo centro de costos de Sabaneta
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuColores_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "darkgoldenrod")
-  })
+#    tm_shape(shp = inmuColores_sf)+ # coordenadas lat long
+ #     tm_dots(size = 0.05,col = "darkgoldenrod")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Envigado
-  Envigado_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Envigado"), ]
+#  Envigado_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Envigado"), ]
   # Pasar los datos a formato sf tomando datos de Envigado
-  inmuEnvigado_sf <- Envigado_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmuEnvigado_sf <- Envigado_ %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+ #   st_intersection(area_metropolitana)
   
   
-  output$mapenvigado<- renderTmap({
+#  output$mapenvigado<- renderTmap({
     # Mapa de solo centro de costos de Sabaneta
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuEnvigado_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "firebrick")
-  })
+#    tm_shape(shp = inmuEnvigado_sf)+ # coordenadas lat long
+#      tm_dots(size = 0.05,col = "firebrick")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Itagui
-  Itagui_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Itagui"), ]
+#  Itagui_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Itagui"), ]
   # Pasar los datos a formato sf tomando datos de Itagui
-  inmuItagui_sf <- Itagui_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+ # inmuItagui_sf <- Itagui_ %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
   
-  output$mapitagui<- renderTmap({
+#  output$mapitagui<- renderTmap({
     # Mapa de solo centro de costos de Sabaneta
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuItagui_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "darksalmon")
-  })
+ #   tm_shape(shp = inmuItagui_sf)+ # coordenadas lat long
+  #    tm_dots(size = 0.05,col = "darksalmon")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Centro
-  Centro_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Centro"), ]
+ # Centro_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Centro"), ]
   # Pasar los datos a formato sf tomando datos de Centro
-  inmuCentro_sf <- Centro_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+ # inmuCentro_sf <- Centro_ %>% 
+ #   st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+ #   st_set_crs(value = 4326) %>%
+  #  st_transform(crs = 3857) %>%
+  #  st_intersection(area_metropolitana)
   
-  output$mapcentro<- renderTmap({
+ # output$mapcentro<- renderTmap({
     # Mapa de solo centro de costos de Centro
-    tmap_mode('view')
+ #   tmap_mode('view')
     
-    tm_shape(shp = inmuCentro_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "darkslateblue")
-  })
+#  tm_shape(shp = inmuCentro_sf)+ # coordenadas lat long
+#    tm_dots(size = 0.05,col = "darkslateblue")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Bello
-  Bello_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Bello"), ]
+#  Bello_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Bello"), ]
   # Pasar los datos a formato sf tomando datos de Bello
-  inmuBello_sf <- Bello_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+ # inmuBello_sf <- Bello_ %>% 
+#  st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
-  output$mapbello<- renderTmap({
+#  output$mapbello<- renderTmap({
     # Mapa de solo centro de costos de Bello
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuBello_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "cornflowerblue")
-  })
+#    tm_shape(shp = inmuBello_sf)+ # coordenadas lat long
+#      tm_dots(size = 0.05,col = "cornflowerblue")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # La estrella
-  La_estrella_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"La estrella"), ]
+#  La_estrella_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"La estrella"), ]
   # Pasar los datos a formato sf tomando datos de La estrella
-  inmuLa_estrella_sf <- La_estrella_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmuLa_estrella_sf <- La_estrella_ %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
-  output$mapestrella<- renderTmap({
+#  output$mapestrella<- renderTmap({
     # Mapa de solo centro de costos de La estrella
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuLa_estrella_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "darkmagenta")
-  })
+#    tm_shape(shp = inmuLa_estrella_sf)+ # coordenadas lat long
+#      tm_dots(size = 0.05,col = "darkmagenta")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # San Antonio Prado
-  San_Antonio_Pr_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"San Antonio Pr."), ]
+#  San_Antonio_Pr_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"San Antonio Pr."), ]
   # Pasar los datos a formato sf tomando datos de San Antonio Prado
-  inmuSan_Antonio_Pr_sf <- San_Antonio_Pr_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmuSan_Antonio_Pr_sf <- San_Antonio_Pr_ %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+#    st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
-  output$mapsanantonio<- renderTmap({
+#  output$mapsanantonio<- renderTmap({
     # Mapa de solo centro de costos de San Antonio Prado
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuSan_Antonio_Pr_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "forestgreen")
-  })
+#    tm_shape(shp = inmuSan_Antonio_Pr_sf)+ # coordenadas lat long
+ #     tm_dots(size = 0.05,col = "forestgreen")
+#  })
   
   # Mapa por cada de uno de los Centros de costos
   # Calasanz
-  Calasanz_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Calasanz"), ]
+#  Calasanz_ <- direccion_unique[is.element(direccion_unique$Centro_de_Costos ,"Calasanz"), ]
   # Pasar los datos a formato sf tomando datos de Calasanz
-  inmuCalasanz_sf <- Calasanz_ %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
+#  inmuCalasanz_sf <- Calasanz_ %>% 
+#    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+ #   st_set_crs(value = 4326) %>%
+#    st_transform(crs = 3857) %>%
+#    st_intersection(area_metropolitana)
   
-  output$mapcalasanz<- renderTmap({
+#  output$mapcalasanz<- renderTmap({
     # Mapa de solo centro de costos de Calasanz
-    tmap_mode('view')
+#    tmap_mode('view')
     
-    tm_shape(shp = inmuCalasanz_sf)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "orange")
-  })
+#    tm_shape(shp = inmuCalasanz_sf)+ # coordenadas lat long
+ #     tm_dots(size = 0.05,col = "orange")
+ # })
   
 }
 
