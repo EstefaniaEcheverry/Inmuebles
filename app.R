@@ -27,8 +27,10 @@ library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
 
 #Crear el objeto de base de datos 
-datos <- read.csv2("data/datosinmu.csv", header= TRUE)
+datos <- read.csv2("data/direccion_act.csv", header= TRUE)
+datos_b<-read.csv2("data/inmuebles_bloq.csv", header= TRUE)
 direccion_unique <- read.csv2("data/direccion_unique.csv", header= TRUE)
+direccion_unique_b <- read.csv2("data/direccion_bloq.csv", header= TRUE)
 #colnames(datos) <- colnames(datos)[2:ncol(datos)]   
 #data <- datos[ , - ncol(datos)]
 attach(datos)
@@ -81,6 +83,9 @@ dashboardPage(
       
       #first menuitem
       menuItem("Dataset", tabName="data", icon=icon("database")),
+      conditionalPanel("input.sidebar == 'data'",
+                       selectInput(inputId ="var0" ,label= "Seleccione una columna de descripción por punto",
+                                   choices =c('Bloqueados','Activos'))),  
       menuItem(text= "Visualization",tabName = "viz",icon = icon("chart-line")),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'distro'",
                        selectInput(inputId ="var1" ,label= "Seleccione la variable X",
@@ -179,19 +184,36 @@ dashboardPage(
 
 server <- function(input, output, session) {
   # stucture 
-  output$structure <- renderPrint(
+
     # Estructura de los datos 
-    datos %>% str()
+
+  output$structure <- renderPrint(
+    if (input$var0=='Bloqueados'){
+      datos_b %>% str()
+    }
+    else{
+      datos    %>% str()
+    }
     
   )
   # Summary 
   output$summary <- renderPrint(
     # Resumen de los datos 
-    datos %>% summary() 
+    if (input$var0=='Bloqueados'){
+      datos_b %>% summary()
+    }
+    else{
+      datos    %>% summary()
+    }
   )
   # DataTable
   output$dataT <- renderDataTable(
-    datos
+    if (input$var0=='Bloqueados'){
+      datos_b
+    }
+    else{
+      datos  
+    }
   )
   # DataTable
   output$dataInmu <- renderDataTable(
@@ -512,6 +534,29 @@ if (is.null(input$var5) ){
     # Mapa del aréa metropolitana con los inmuebles 
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
+      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
+  })
+  direcciones_sf_b <- direccion_unique_b %>% 
+    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+    st_set_crs(value = 4326) %>%
+    st_transform(crs = 3857) %>%
+    st_intersection(area_metropolitana)
+  output$map_plot_b<-renderTmap({
+    if (is.null(input$var5) ){
+      direcciones_sf_filtro_b<-direcciones_sf_b
+    }
+    else{
+      direcciones_sf_filtro_b<-direcciones_sf_b[is.element(direcciones_sf_b$Centro_de_Costos,input$var5),]      
+    }
+    if(is.null(input$var6)){
+      columnas_mostrar<-c4
+    }
+    else{
+      columnas_mostrar<-input$var6
+    }
+    # Mapa del aréa metropolitana con los inmuebles 
+    tmap_mode('view') %>%
+      tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
   })
   
