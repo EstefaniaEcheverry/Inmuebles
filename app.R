@@ -25,8 +25,6 @@ library(tidygeocoder)
 library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
-thematic::thematic_shiny(font = "auto")
-
 
 #Crear el objeto de base de datos 
 datos <- read.csv2("data/direccion_act.csv", header= TRUE)
@@ -61,6 +59,7 @@ c4=c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
 
+  
 
 dashboardPage(
   dashboardHeader(title="Inmuebles de Portada Inmobiliaria", titleWidth = 650, 
@@ -131,7 +130,7 @@ dashboardPage(
                      
                      
                      ), 
-                     tabPanel(title="Datos",icon = icon("address-card"),value= "datos.1", dataTableOutput("dataT")),
+                     tabPanel(title="Datos",icon = icon("address-card"),value= "datos.1", DT::dataTableOutput("dataT")),
                      tabPanel(title="Estructura",icon = icon("address-card"),value= "datos.2",verbatimTextOutput("structure")),
                      tabPanel(title="Resumen estadísticas",icon = icon("address-card"),value= "datos.3",verbatimTextOutput("summary"))
               )
@@ -204,13 +203,15 @@ server <- function(input, output, session) {
     }
   )
   # DataTable
-  output$dataT <- renderDataTable(
+  output$dataT <- DT::renderDataTable(
     if (input$var0=='Activos'){
       datos
     }
     else{
-      datos_b 
+      datos_b
+      
     }
+    , options = list(scrollX = TRUE)
   )
   # DataTable
   output$dataInmu <- renderDataTable(
@@ -733,3 +734,4 @@ if (is.null(input$var5) ){
 
 #Definición de la aplicación
 shinyApp(ui = ui, server = server)
+
