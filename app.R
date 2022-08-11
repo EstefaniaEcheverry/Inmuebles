@@ -34,7 +34,7 @@ datos_b<-read.csv2("data/inmuebles_bloq.csv", header= TRUE)
 direccion_unique <- read.csv2("data/direccion_unique.csv", header= TRUE)
 direccion_unique_b <- read.csv2("data/direccion_bloq.csv", header= TRUE)
 # Nombres de los datos
-attach(datos)
+#attach(datos)
 # Cambiar las variables a factores
 datos$IdInmueble <- as.character(datos$IdInmueble)
 datos$NoContrato <- as.character(datos$NoContrato)
@@ -221,24 +221,30 @@ server <- function(input, output, session) {
   # Stacked histogram and boxplot
   output$histplot <- renderPlotly({
     
-    p1 <- datos %>%
+    datos_<-datos[ datos[,input$var1]>0, ]
+    registos_0<-nrow(datos)-nrow(datos_)
+    texto_add<-''
+    if (registos_0>0){
+      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(nrow(datos)),sep='')
+    }
+    p1 <- datos_ %>%
       plot_ly( ) %>%
       add_histogram(~get(input$var1)) %>%
       layout(xaxis = list(title= ~get(input$var1)))
     # Box plot Vr. Canon
-    p2 <- datos %>% 
+    p2 <- datos_ %>% 
       plot_ly() %>% 
       add_boxplot(~get(input$var1)) %>%
       layout(yaxis =list(showticklabels = F))
     # Stacking Plots Vr. Canon
     subplot(p2, p1, nrows=2,shareX = TRUE) %>%
       hide_legend() %>%
-      layout(title="Gráfico de distribución - Histograma y Boxplot",
+      layout(title=paste("Gráfico de distribución - Histograma y Boxplot \n ",texto_add,sep=''  ) ,
              yaxis=list(title="Frecuencia"))
     
   })
-  
-  
+
+
  
   
   ### Bar Charts - State wise trend
@@ -619,14 +625,18 @@ server <- function(input, output, session) {
   
   output$boxplot <- renderPlotly({
     # Box Plot
-    datos_<-datos[datos$Vr.Canon>0,]
+    datos_<-datos[ datos[,input$var2]>0, ]
+    registos_0<-nrow(datos)-nrow(datos_)
+    texto_add<-''
+    if (registos_0>0){
+      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(nrow(datos)),sep='')
+    }
     
     datos_ %>%
-      filter(Vr.Canon>0 ) %>%
       plot_ly() %>%
-      add_boxplot(x = datos_$CentroCostos,y=datos_$Vr.Canon, data = datos_,
+      add_boxplot(x = datos_$CentroCostos,y=datos_[,input$var2],# data = datos_,
                   color= datos_$CentroCostos)%>%
-      layout(title="Gráfico de disperción del Valor del Canon por Centro de Costos",
+      layout(title=paste('Gráfico de box-plot de ',input$var2, ' por Centro de Costos \n' ,texto_add,sep=''),
              yaxis=list(title="Frecuencia"))
     
   })
