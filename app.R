@@ -27,14 +27,16 @@ library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
 
 #Crear el objeto de base de datos 
-datos <- read.csv2("data/direccion_act.csv", header= TRUE)
-datos_b<-read.csv2("data/inmuebles_bloq.csv", header= TRUE)
-direccion_unique <- read.csv2("data/direccion_unique.csv", header= TRUE)
-direccion_unique_b <- read.csv2("data/direccion_bloq.csv", header= TRUE)
+datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
+datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
+direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
+direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
 # Nombres de los datos
 #attach(datos)
 # Cambiar las variables a factores
 datos$IdInmueble <- as.character(datos$IdInmueble)
+
+
 datos$NoContrato <- as.character(datos$NoContrato)
 datos$NoCCostos <- as.factor(datos$NoCCostos)
 datos$NoSolicitud <- as.character(datos $NoSolicitud)
@@ -46,6 +48,8 @@ datos <- datos %>%
 datos <- datos %>%
   rename(Longitud = localizaciones.long)
 
+datos <- datos %>% rename(c( "Apt/Casa" = "palabras_apa" ,  "localizaciones" =
+"localizaciones.address"))
 
 #  Choices for selectInput 
 c1 = datos %>% select(c(13:15))%>%
@@ -58,11 +62,13 @@ n1<-length(c4)
 c4=c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
-
   
 
 dashboardPage(
-  dashboardHeader(title="Inmuebles de Portada Inmobiliaria", titleWidth = 650, 
+  skin = "blue",
+  title = "Inmuebles de Portada Inmobiliaria",
+  dashboardHeader(title=span(img(src = "logo Portada.png", height = 35), "Inmuebles de Portada Inmobiliaria"),
+                  titleWidth = 400, 
                   tags$li(class="dropdown",tags$a(href="https://portadainmobiliaria.com/", icon("building"), "Portada", target="_blank")),
                   tags$li(class="dropdown",tags$a(href="https://www.linkedin.com/in/estefania-echeverry-franco-932597232/" ,icon("linkedin"), "My Profile", target="_blank")),
                   tags$li(class="dropdown",tags$a(href="https://github.com/EstefaniaEcheverry/Inmuebles", icon("github"), "Source Code", target="_blank"))
@@ -71,7 +77,7 @@ dashboardPage(
     #sidebarmenu
     sidebarMenu(
       id="sidebar",
-      
+      fluidRow(style='height:5vh'),
       #first menuitem
       menuItem("Dataset", tabName="data", icon=icon("database")),
       conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.1' ",
@@ -119,12 +125,16 @@ dashboardPage(
       # first tab item
       tabItem(tabName = "data",
               tabBox(id="t1",width= 12,
+                     fluidRow(style='height:5vh'),
                      tabPanel(title="Información",icon = icon("address-card"),fluidRow(
                        column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                               align = "center"),
                        column(width = 4, tags$br() ,
-                              tags$p("Son 5301 inmuebles controlados por los diferentes Centros de costos, segun los datos 66 de estos
-                                     inmuebles estan bloqueados, ")
+                              tags$p("Son 5483 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 24 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5459 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1056 de estos inmuebles y Laureles 871 
+                                     inmuebles. ")
                        )
                      )
                      
@@ -138,6 +148,7 @@ dashboardPage(
       # second tab item or landing page here ..
       tabItem(tabName = "viz",
               tabBox(id="t2", width=20,
+                     fluidRow(style='height:5vh'),
                      tabPanel(title="Centro de Costos",icon = icon("building"), value="trendscc",
                               fluidRow(tags$div(align="center", box(tableOutput("top5"), title = textOutput("head1"),
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
@@ -164,6 +175,7 @@ dashboardPage(
       # third tab item
       tabItem(tabName="map",
               tabBox(id="t3",width= 12,
+                     fluidRow(style='height:5vh'),
                      tabPanel(title="Inmuebles",withSpinner(tmapOutput(outputId = "map_plot"))
       
                      ),
@@ -186,6 +198,7 @@ server <- function(input, output, session) {
   output$structure <- renderPrint(
     if (input$var0=='Activos'){
       datos %>% str()
+      
     }
     else{
       datos_b    %>% str()
@@ -204,15 +217,17 @@ server <- function(input, output, session) {
   )
   # DataTable
   output$dataT <- DT::renderDataTable(
+    DT::datatable({
     if (input$var0=='Activos'){
       datos
     }
     else{
       datos_b
       
-    }
-    , options = list(scrollX = TRUE)
-  )
+    }}
+    , options = list(scrollX = TRUE) 
+    
+  ))
   # DataTable
   output$dataInmu <- renderDataTable(
     direccion_unique
@@ -284,7 +299,7 @@ server <- function(input, output, session) {
                   size=4.0                            
         ) +  
         scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
-                                                                  "La estrella", "San Antonio Pr" , "Calasanz")) +    
+                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon")) +    
         
         theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
         theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
@@ -311,7 +326,7 @@ server <- function(input, output, session) {
                   size=4.0                            
         ) +  
         scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
-                                                                  "La estrella", "San Antonio Pr" , "Calasanz")) +    
+                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon")) +    
         
         theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
         theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
@@ -346,7 +361,7 @@ server <- function(input, output, session) {
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
-                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr")) +                                            
+                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr","Bogota")) +                                            
         
         geom_text(aes(label=paste0(Total.ciudad," ", "", "\n(", Porcentaje, "%",")")),  
                   vjust=1.3,                         
@@ -370,7 +385,7 @@ server <- function(input, output, session) {
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
-                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr")) +                                            
+                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr","Bogota")) +                                            
         
         geom_text(aes(label=paste0(Total.ciudad," ", "", "\n(", Porcentaje, "%",")")),  
                   vjust=1.3,                         
@@ -644,7 +659,8 @@ server <- function(input, output, session) {
   #####################
   ################################################################
   # Crear mapa con geoboundaries escogiendo solo los municipios
-  area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2) %>%
+  
+  area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
     filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
                                   "BELLO",    # estan en mayuscula y no estan
                                   "COPACABANA",# en UTF-8 
@@ -653,7 +669,8 @@ server <- function(input, output, session) {
                                   "ITAGÃœÃ", # itagui
                                   "LA ESTRELLA", 
                                   "SABANETA",
-                                  "SAN JERÃ“NIMO"
+                                  "SAN JERÃ“NIMO",
+                                  "BOGOTÃ, D.C."
     ) ) 
     ) %>%
     st_transform(crs = 3857)
@@ -663,15 +680,17 @@ server <- function(input, output, session) {
                                   "ITAGÜÍ",
                                   "CALDAS",
                                   "SAN JERÓNIMO",
+                                  "BOGOTÁ",
                                   "MEDELLIN",
                                   "COPACABANA",
                                   "BELLO",
                                   "SABANETA",
-                                  "LA ESTRELLA" 
+                                  "LA ESTRELLA"  
   )
   # Eliminar el Caldas que no es de Antioquia
-  area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName 
-                                             == "CALDAS_NO"),]
+  area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName == "CALDAS_NO"),]
+  
+
   ################## Mapas
   
   # Pasar los datos a formato sf tomando algunos datos de la base
