@@ -25,7 +25,8 @@ library(tidygeocoder)
 library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
-
+lat_<-NULL
+long_<-NULL
 #Crear el objeto de base de datos 
 datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
 datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
@@ -175,11 +176,25 @@ dashboardPage(
       # third tab item
       tabItem(tabName="map",
               tabBox(id="t3",width= 12,
-                     fluidRow(style='height:5vh'),
-                     tabPanel(title="Inmuebles",withSpinner(tmapOutput(outputId = "map_plot"))
-      
-                     ),
-                     tabPanel(title="Bloqueados",withSpinner(tmapOutput(outputId = "map_plot_b"))
+                 
+                     
+                     
+                     
+                     tabPanel(title="Inmuebles",
+                              fluidPage(
+                                fluidRow(
+                                  br(),
+                                  withSpinner(leafletOutput( "map_plot"))),                                
+                                fluidRow(
+                                  ( DT::dataTableOutput('data_filtro')) )
+
+                      )),
+                     tabPanel(title="Bloqueados",
+                              fluidPage(fluidRow(br(),
+                                withSpinner(tmapOutput(outputId = "map_plot_b"))),
+                                fluidRow(
+                                  ( DT::dataTableOutput('data_filtro_b')) )
+                              )
                      
                      ))
       )
@@ -193,7 +208,8 @@ dashboardPage(
 server <- function(input, output, session) {
   # stucture 
  
-    # Estructura de los datos 
+
+  
 
   output$structure <- renderPrint(
     if (input$var0=='Activos'){
@@ -704,7 +720,9 @@ server <- function(input, output, session) {
 #    tm_shape(shp = direcciones_sf)+ # coordenadas lat long
     #tm_markers(size = 0.05,col = "Centro_de_Costos")#
 #      tm_dots(size = 0.05,col = "Centro_de_Costos",shape=25,popup.vars=c( "Direcciones_c" , "Nombre_del_Lugar","Total_de_apartamentos"))
-  output$map_plot<- renderTmap({
+  
+  rv_map <-reactiveValues(Clicks=list())
+  output$map_plot<- renderLeaflet({
 if (is.null(input$var5) ){
       direcciones_sf_filtro<-direcciones_sf
     }
@@ -718,10 +736,24 @@ if (is.null(input$var5) ){
       columnas_mostrar<-input$var6
     }
     # Mapa del aréa metropolitana con los inmuebles 
+    tmap_leaflet(
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
+    
+    )
+  },
+
+)
+  observe({
+    event <- input$map_shape_click
+    
   })
+  
+
+  output$data_filtro<- DT::renderDataTable({
+    datos
+  }, options = list(scrollX = TRUE) )
   direcciones_sf_b <- direccion_unique_b %>% 
     st_as_sf(coords = c('Longitud', 'Latitud')) %>%
     st_set_crs(value = 4326) %>%
@@ -745,6 +777,9 @@ if (is.null(input$var5) ){
       tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
   })
+  output$data_filtro_b<- DT::renderDataTable({
+    datos_b
+  }, options = list(scrollX = TRUE) )
   
 }
 
