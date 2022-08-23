@@ -25,19 +25,21 @@ library(tidygeocoder)
 library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
-lat_<-NULL
-long_<-NULL
 #Crear el objeto de base de datos 
 datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
 datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
 direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
 direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
-# Nombres de los datos
-#attach(datos)
+
 # Cambiar las variables a factores
 datos$IdInmueble <- as.character(datos$IdInmueble)
-
-
+# creamos indices
+direccion_unique$indice<- 1:nrow(direccion_unique)
+col_t<-ncol(direccion_unique)
+direccion_unique<-direccion_unique[,c(col_t,1:col_t-1)]
+direccion_unique_b$indice<- 1:nrow(direccion_unique_b)
+col_t<-ncol(direccion_unique_b)
+direccion_unique_b<-direccion_unique_b[,c(col_t,1:col_t-1)]
 datos$NoContrato <- as.character(datos$NoContrato)
 datos$NoCCostos <- as.factor(datos$NoCCostos)
 datos$NoSolicitud <- as.character(datos $NoSolicitud)
@@ -47,8 +49,7 @@ datos$Aseguradora <- as.factor(datos$Aseguradora)
 datos <- datos %>%
   rename(Latitud = localizaciones.lat)
 datos <- datos %>%
-  rename(Longitud = localizaciones.long)
-
+  rename(Longitud = localizaciones.long) 
 datos <- datos %>% rename(c( "Apt/Casa" = "palabras_apa" ,  "localizaciones" =
 "localizaciones.address"))
 
@@ -63,8 +64,6 @@ n1<-length(c4)
 c4=c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
-  
-
 dashboardPage(
   skin = "blue",
   title = "Inmuebles de Portada Inmobiliaria",
@@ -173,18 +172,13 @@ dashboardPage(
                      tabPanel(title="Scatterplot ",icon =icon("chart-line"),value="relation", withSpinner(plotlyOutput("scatter")))
               )
       ),
-      # third tab item
       tabItem(tabName="map",
               tabBox(id="t3",width= 12,
-                 
-                     
-                     
-                     
                      tabPanel(title="Inmuebles",
                               fluidPage(
                                 fluidRow(
                                   br(),
-                                  withSpinner(leafletOutput( "map_plot"))),                                
+                                  (tmapOutput( "map_plot"))),                                
                                 fluidRow(
                                   ( DT::dataTableOutput('data_filtro')) )
 
@@ -207,7 +201,124 @@ dashboardPage(
 
 server <- function(input, output, session) {
   # stucture 
+  #####################
+  ################################################################
+  # Crear mapa con geoboundaries escogiendo solo los municipios
+  
+  area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
+    filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
+                                  "BELLO",    # estan en mayuscula y no estan
+                                  "COPACABANA",# en UTF-8 
+                                  "ENVIGADO",
+                                  "CALDAS", # hay dos caldas en colombia
+                                  "ITAGÃœÃ", # itagui
+                                  "LA ESTRELLA", 
+                                  "SABANETA",
+                                  "SAN JERÃ“NIMO",
+                                  "BOGOTÃ, D.C."
+    ) ) 
+    ) %>%
+    st_transform(crs = 3857)
+  # Cambiandoles los nombres por como se escribe
+  area_metropolitana$shapeName<-c("CALDAS_NO",# no son de antioquia        
+                                  "ENVIGADO",
+                                  "ITAGÜÍ",
+                                  "CALDAS",
+                                  "SAN JERÓNIMO",
+                                  "BOGOTÁ",
+                                  "MEDELLIN",
+                                  "COPACABANA",
+                                  "BELLO",
+                                  "SABANETA",
+                                  "LA ESTRELLA"  
+  )
+  # Eliminar el Caldas que no es de Antioquia
+  area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName == "CALDAS_NO"),]
+  
+  
+  ################## Mapas
+  
+  # Pasar los datos a formato sf tomando algunos datos de la base
+  direcciones_sf <- direccion_unique %>% 
+    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+    st_set_crs(value = 4326) %>%
+    st_transform(crs = 3857) %>%
+    st_intersection(area_metropolitana)
+  
+
+    output$map_plot<- renderTmap({
+    if (is.null(input$var5) ){
+      direcciones_sf_filtro<-direcciones_sf
+    }
+    else{
+      direcciones_sf_filtro<-direcciones_sf[is.element(direcciones_sf$Centro_de_Costos,input$var5),]      
+    }
+    if(is.null(input$var6)){
+      columnas_mostrar<-c4
+    }
+    else{
+      columnas_mostrar<-input$var6
+      print(input)
+    }
+    # Mapa del aréa metropolitana con los inmuebles 
+    tmap_mode('view') %>%
+        tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
+        tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
  
+  })  
+  
+  output$data_filtro<- DT::renderDataTable({
+   if ( sum(names(input) == 'map_plot_marker_click')==1 ){
+
+    click<-input$map_plot_marker_click
+    direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
+                                      'Direcciones_c']
+    datos_print<- datos[datos$Direcciones_c==direccion_print,]  
+    datos_print
+   }
+    else{
+      datos
+    }
+  }, options = list(scrollX = TRUE) )
+  direcciones_sf_b <- direccion_unique_b %>% 
+    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+    st_set_crs(value = 4326) %>%
+    st_transform(crs = 3857) %>%
+    st_intersection(area_metropolitana)
+  output$map_plot_b<-renderTmap({
+    if (is.null(input$var5) ){
+      direcciones_sf_filtro_b<-direcciones_sf_b
+    }
+    else{
+      direcciones_sf_filtro_b<-direcciones_sf_b[is.element(direcciones_sf_b$Centro_de_Costos,input$var5),]      
+    }
+    if(is.null(input$var6)){
+      columnas_mostrar<-c4
+    }
+    else{
+      columnas_mostrar<-input$var6
+
+    }
+    # Mapa del aréa metropolitana con los inmuebles 
+    tmap_mode('view') %>%
+      tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
+      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
+  })
+  output$data_filtro_b<- DT::renderDataTable({
+    if ( sum(names(input) == 'map_plot_b_marker_click')==1 ){
+      
+      click<-input$map_plot_b_marker_click
+      direccion_print<-direccion_unique_b[paste('X',direccion_unique$indice,sep="")==click$id ,
+                                        'Direcciones_c']
+      datos_print<- datos_b[datos_b$Direcciones_c==direccion_print,]  
+      datos_print
+    }
+    else{
+      datos_b
+    }
+  }, options = list(scrollX = TRUE) )
+  # reactive values for map
+  
 
   
 
@@ -221,6 +332,7 @@ server <- function(input, output, session) {
     }
     
   )
+
   # Summary 
   output$summary <- renderPrint(
     # Resumen de los datos 
@@ -536,11 +648,8 @@ server <- function(input, output, session) {
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(7)
-      
     } 
- 
-    
-    
+
   })
   
   # Rendering the box header  
@@ -672,115 +781,8 @@ server <- function(input, output, session) {
              yaxis=list(title="Frecuencia"))
     
   })
-  #####################
-  ################################################################
-  # Crear mapa con geoboundaries escogiendo solo los municipios
-  
-  area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
-    filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
-                                  "BELLO",    # estan en mayuscula y no estan
-                                  "COPACABANA",# en UTF-8 
-                                  "ENVIGADO",
-                                  "CALDAS", # hay dos caldas en colombia
-                                  "ITAGÃœÃ", # itagui
-                                  "LA ESTRELLA", 
-                                  "SABANETA",
-                                  "SAN JERÃ“NIMO",
-                                  "BOGOTÃ, D.C."
-    ) ) 
-    ) %>%
-    st_transform(crs = 3857)
-  # Cambiandoles los nombres por como se escribe
-  area_metropolitana$shapeName<-c("CALDAS_NO",# no son de antioquia        
-                                  "ENVIGADO",
-                                  "ITAGÜÍ",
-                                  "CALDAS",
-                                  "SAN JERÓNIMO",
-                                  "BOGOTÁ",
-                                  "MEDELLIN",
-                                  "COPACABANA",
-                                  "BELLO",
-                                  "SABANETA",
-                                  "LA ESTRELLA"  
-  )
-  # Eliminar el Caldas que no es de Antioquia
-  area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName == "CALDAS_NO"),]
   
 
-  ################## Mapas
-  
-  # Pasar los datos a formato sf tomando algunos datos de la base
-  direcciones_sf <- direccion_unique %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
-  
-#    tmap_mode('view') +
-#    tm_shape(shp = direcciones_sf)+ # coordenadas lat long
-    #tm_markers(size = 0.05,col = "Centro_de_Costos")#
-#      tm_dots(size = 0.05,col = "Centro_de_Costos",shape=25,popup.vars=c( "Direcciones_c" , "Nombre_del_Lugar","Total_de_apartamentos"))
-  
-  rv_map <-reactiveValues(Clicks=list())
-  output$map_plot<- renderLeaflet({
-if (is.null(input$var5) ){
-      direcciones_sf_filtro<-direcciones_sf
-    }
-    else{
-      direcciones_sf_filtro<-direcciones_sf[is.element(direcciones_sf$Centro_de_Costos,input$var5),]      
-    }
-    if(is.null(input$var6)){
-      columnas_mostrar<-c4
-    }
-    else{
-      columnas_mostrar<-input$var6
-    }
-    # Mapa del aréa metropolitana con los inmuebles 
-    tmap_leaflet(
-    tmap_mode('view') %>%
-      tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
-    
-    )
-  },
-
-)
-  observe({
-    event <- input$map_shape_click
-    
-  })
-  
-
-  output$data_filtro<- DT::renderDataTable({
-    datos
-  }, options = list(scrollX = TRUE) )
-  direcciones_sf_b <- direccion_unique_b %>% 
-    st_as_sf(coords = c('Longitud', 'Latitud')) %>%
-    st_set_crs(value = 4326) %>%
-    st_transform(crs = 3857) %>%
-    st_intersection(area_metropolitana)
-  output$map_plot_b<-renderTmap({
-    if (is.null(input$var5) ){
-      direcciones_sf_filtro_b<-direcciones_sf_b
-    }
-    else{
-      direcciones_sf_filtro_b<-direcciones_sf_b[is.element(direcciones_sf_b$Centro_de_Costos,input$var5),]      
-    }
-    if(is.null(input$var6)){
-      columnas_mostrar<-c4
-    }
-    else{
-      columnas_mostrar<-input$var6
-    }
-    # Mapa del aréa metropolitana con los inmuebles 
-    tmap_mode('view') %>%
-      tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
-  })
-  output$data_filtro_b<- DT::renderDataTable({
-    datos_b
-  }, options = list(scrollX = TRUE) )
-  
 }
 
 #Configuración tematica de los gráficos al estilo de la aplicación
