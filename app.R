@@ -103,10 +103,10 @@ dashboardPage(
                        selectInput(inputId ="var1" ,label= "Seleccione la variable X",
                                    choices =c1 ,selected="Vr.Canon")),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
-                       selectInput(inputId ="var3" ,label= "Seleccione la variable X",
+                       selectInput(inputId ="varx" ,label= "Seleccione la variable X",
                                    choices =c1 ,selected="Vr.Canon")),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation'" ,
-                       selectInput(inputId ="var4" ,label= "Seleccione la variable Y",
+                       selectInput(inputId ="vary" ,label= "Seleccione la variable Y",
                                    choices =c1 ,selected="Vr.Administracion")),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'boxpl'",
                        selectInput(inputId ="var2" ,label= "Seleccione la variable",
@@ -754,11 +754,11 @@ server <- function(input, output, session) {
     #Creating scatter plot for relationship using ggplot
     
     sc <- datos %>%
-      ggplot(aes(x=get(input$var3), y =get(input$var4), color= CentroCostos)) +
-      geom_point() +
-      labs(title = paste("Diagrama de dispersión entre", input$var3, "y", input$var4),
-           x= input$var3,
-           y= input$var4) +
+      ggplot(aes(x=get(input$varx), y =get(input$vary), label= IdInmueble)) +
+      geom_point(aes(colour = (CentroCostos))) +
+      labs(title = paste("Diagrama de dispersión entre", input$varx, "y", input$vary),
+           x= input$varx,
+           y= input$vary) +
       theme(plot.title = element_textbox_simple(size=10,
                                                 halign = 0.5))
     ggplotly(sc)
