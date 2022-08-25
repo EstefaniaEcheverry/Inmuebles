@@ -1,5 +1,6 @@
 #Cargue las librerias necesarias
 library(DT)
+library(gt)
 library(sf)
 library(sp)
 library(maps)
@@ -26,7 +27,7 @@ library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
 #Crear el objeto de base de datos 
-datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
+  datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
 datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
 direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
 direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
@@ -52,7 +53,11 @@ datos <- datos %>%
   rename(Longitud = localizaciones.long) 
 datos <- datos %>% rename(c( "Apt/Casa" = "palabras_apa" ,  "localizaciones" =
 "localizaciones.address"))
+datos$Tipo_de_Inmueble <- (datos$ Valor.Iva >0)
 
+filtro=datos$Tipo_de_Inmueble
+datos$Tipo_de_Inmueble[filtro==F]<-'Vivienda'
+datos$Tipo_de_Inmueble[filtro]<-'Comercial'
 #  Choices for selectInput 
 c1 = datos %>% select(c(13:15))%>%
   names()
@@ -103,10 +108,10 @@ dashboardPage(
                        selectInput(inputId ="var1" ,label= "Seleccione la variable X",
                                    choices =c1 ,selected="Vr.Canon")),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
-                       selectInput(inputId ="var3" ,label= "Seleccione la variable X",
+                       selectInput(inputId ="varx" ,label= "Seleccione la variable X",
                                    choices =c1 ,selected="Vr.Canon")),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation'" ,
-                       selectInput(inputId ="var4" ,label= "Seleccione la variable Y",
+                       selectInput(inputId ="vary" ,label= "Seleccione la variable Y",
                                    choices =c1 ,selected="Vr.Administracion")),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'boxpl'",
                        selectInput(inputId ="var2" ,label= "Seleccione la variable",
@@ -204,7 +209,7 @@ server <- function(input, output, session) {
   #####################
   ################################################################
   # Crear mapa con geoboundaries escogiendo solo los municipios
-  
+
   area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
     filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
                                   "BELLO",    # estan en mayuscula y no estan
@@ -394,15 +399,21 @@ server <- function(input, output, session) {
   ### Bar Charts - State wise trend
   
   #################
+  sum_pesos<-function(vector){
+    total=sum(vector)
+    paste('$' ,formatC(total,big.mark = '.',format='fg'))
+  }
 
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
-  tabla_centroc <- datos %>% group_by(CentroCostos) %>%
-    summarise(Total.c=n())  %>%  
+  tabla_centroc <- datos %>% group_by(CentroCostos) %>% 
+    #Vr.Canon_punto <- format(sum(Vr.Canon), big.mark =".") %>%
+    summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), N_Vivienda = sum(Tipo_de_Inmueble == "Vivienda"),
+              N_Comercial = sum(Tipo_de_Inmueble == "Comercial"))  %>%  
     dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))
  
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc1 <- datos_b %>% group_by(CentroCostos) %>%
-    summarise(Total.c=n())  %>%  
+    summarise(Total.c=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
     dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))
   
   # Barplot de Frecuencia de la variable Centro de Costos
@@ -410,8 +421,8 @@ server <- function(input, output, session) {
     if (input$var7=='Activos'){
   
       # Gráfica de Centro total de Costos
-      p4 <- tabla_centroc %>% ggplot(aes(x=CentroCostos, y =Total.c,
-                                         fill=CentroCostos )) +
+      p4 <- tabla_centroc %>% ggplot(aes(x=CentroCostos, y =Total.c, 
+                                         fill=(CentroCostos),label=Vr.Canon,N_Vivienda,N_Comercial)) +
         geom_bar(width = 0.9, stat="identity")+  
         
         ylim(c(0,1100))+
@@ -438,7 +449,7 @@ server <- function(input, output, session) {
     
       # Gráfica de Centro total de Costos
       p4 <- tabla_centroc1 %>% ggplot(aes(x=CentroCostos, y =Total.c,
-                                         fill=CentroCostos )) +
+                                         fill=CentroCostos,label=Vr.Canon )) +
         geom_bar(width = 0.9, stat="identity")+  
         
         ylim(c(0,15))+
@@ -468,12 +479,12 @@ server <- function(input, output, session) {
  
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad <- datos %>% group_by(Ciudad) %>%
-    summarise(Total.ciudad=n())  %>%  
+    summarise(Total.ciudad=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
     dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1))
   
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad1 <- datos_b %>% group_by(Ciudad) %>%
-    summarise(Total.ciudad=n())  %>%  
+    summarise(Total.ciudad=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
     dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1))
   
   # Barplot de Frecuencia de la variable Ciudad
@@ -481,7 +492,8 @@ server <- function(input, output, session) {
     if (input$var8=='Activos'){
     
       # Gráfica de Centro total de Costos
-      p5 <- tabla_ciudad %>% ggplot(aes(x=Ciudad, y = Total.ciudad, fill=Ciudad )) + 
+      p5 <- tabla_ciudad %>% ggplot(aes(x=Ciudad, y = Total.ciudad, fill=Ciudad,
+                                        label=Vr.Canon)) + 
         geom_bar( stat="identity"              
         )+  
         
@@ -505,7 +517,8 @@ server <- function(input, output, session) {
     }
     else{
       # Gráfica de Centro total de Costos
-      p6 <- tabla_ciudad1 %>% ggplot(aes(x=Ciudad, y = Total.ciudad, fill=Ciudad )) + 
+      p6 <- tabla_ciudad1 %>% ggplot(aes(x=Ciudad, y = Total.ciudad, fill=Ciudad,
+                                         label=Vr.Canon )) + 
         geom_bar( stat="identity"              
         )+  
         
@@ -533,12 +546,12 @@ server <- function(input, output, session) {
   ####################
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_aseg <- datos %>% group_by(Aseguradora) %>%
-    summarise(Total.aseg=n())  %>%  
+    summarise(Total.aseg=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
     dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1))
   
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_aseg1 <- datos_b %>% group_by(Aseguradora) %>%
-    summarise(Total.aseg=n())  %>%  
+    summarise(Total.aseg=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
     dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1))
   
   # Barplot de Frecuencia de la variable Aseguradora
@@ -548,7 +561,7 @@ server <- function(input, output, session) {
     
       
       # Gráfica de Aseguradora
-      p8 <- tabla_aseg %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora )) + 
+      p8 <- tabla_aseg %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora ,label=Vr.Canon)) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
         ylim(c(0,5000))+
         labs(x="Aseguradoras", y= "Frecuencia",title= "Diagrama de barras para la variable Aseguradora") +   
@@ -571,7 +584,7 @@ server <- function(input, output, session) {
     else{
    
      # Gráfica de Aseguradora
-      p9 <- tabla_aseg1 %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora )) + 
+      p9 <- tabla_aseg1 %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora,label=Vr.Canon )) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
         ylim(c(0,55))+
         labs(x="Aseguradoras", y= "Frecuencia",title= "Diagrama de barras para la variable Aseguradora") +   
@@ -598,7 +611,7 @@ server <- function(input, output, session) {
   
   # Rendering the box header  
   output$head1 <- renderText(
-    paste("los 5 Centros de Costos con mas Inmuebles")
+    paste("Los Centros de Costos con mas Inmuebles")
   )
   
   # Rendering the box header 
@@ -611,7 +624,7 @@ server <- function(input, output, session) {
     if (input$var7=='Activos'){
     # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc  %>%
-        select(CentroCostos, Total.c) %>%
+        select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(5)
@@ -621,10 +634,10 @@ server <- function(input, output, session) {
     else{
      # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc1  %>%
-        select(CentroCostos, Total.c) %>%
+        select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
-        head(4)
+        head(2)
       
     }
     
@@ -635,16 +648,16 @@ server <- function(input, output, session) {
     if (input$var7=='Activos'){
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc %>%
-        select(CentroCostos, Total.c) %>%
+        select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
-        head(6)
+        head(7)
       
     }
     else{
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc1 %>%
-        select(CentroCostos, Total.c) %>%
+        select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(7)
@@ -654,7 +667,7 @@ server <- function(input, output, session) {
   
   # Rendering the box header  
   output$head3 <- renderText(
-    paste("Los 5 municipios con mas inmuebles")
+    paste("Los municipios con mas inmuebles")
   )
   
   # Rendering the box header 
@@ -666,17 +679,17 @@ server <- function(input, output, session) {
   output$top5.1 <- renderTable({
     if (input$var8=='Activos'){
     tabla_ciudad  %>%
-      select(Ciudad, Total.ciudad) %>%
+      select(Ciudad, Total.ciudad, Vr.Canon) %>%
       arrange(desc((Total.ciudad))) %>%
       dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
       head(5)
     }
     else{
       tabla_ciudad1  %>%
-        select(Ciudad, Total.ciudad) %>%
+        select(Ciudad, Total.ciudad, Vr.Canon) %>%
         arrange(desc((Total.ciudad))) %>%
         dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(3) 
+        head(1) 
     }
   })
   
@@ -684,43 +697,43 @@ server <- function(input, output, session) {
   output$low5 <- renderTable({
     if (input$var8=='Activos'){
     tabla_ciudad %>%
-      select(Ciudad, Total.ciudad) %>%
+      select(Ciudad, Total.ciudad, Vr.Canon) %>%
       arrange(Total.ciudad) %>%
       dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-      head(5)
+      head(6)
     }
     else{
       tabla_ciudad1 %>%
-        select(Ciudad, Total.ciudad) %>%
+        select(Ciudad, Total.ciudad, Vr.Canon) %>%
         arrange(Total.ciudad) %>%
         dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(4)
+        head(5)
     }
     
   })
   
   # Rendering the box header  
   output$head5 <- renderText(
-    paste("Las 3 aseguradoras con mas inmuebles")
+    paste("Las aseguradoras con mas inmuebles")
   )
   
   # Rendering the box header 
   output$head6 <- renderText(
-    paste("Las asegiradoras con menos inmuebles")
+    paste("Las aseguradoras con menos inmuebles")
   )
   
   # Top 3 con mayor # de inmuebles Aseguradoras 
   output$top3 <- renderTable({
     if (input$var9=='Activos'){
     tabla_aseg  %>%
-      select(Aseguradora, Total.aseg) %>%
+      select(Aseguradora, Total.aseg, Vr.Canon) %>%
       arrange(desc((Total.aseg))) %>%
       dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
       head(3)
     }
     else{
       tabla_aseg1  %>%
-        select(Aseguradora, Total.aseg) %>%
+        select(Aseguradora, Total.aseg, Vr.Canon) %>%
         arrange(desc((Total.aseg))) %>%
         dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
         head(2)
@@ -734,14 +747,14 @@ server <- function(input, output, session) {
   output$low4 <- renderTable({
     if (input$var9=='Activos'){
     tabla_aseg  %>%
-      select(Aseguradora, Total.aseg) %>%
+      select(Aseguradora, Total.aseg, Vr.Canon) %>%
       arrange((Total.aseg)) %>%
       dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
       head(4)
     }
     else{
       tabla_aseg1  %>%
-        select(Aseguradora, Total.aseg) %>%
+        select(Aseguradora, Total.aseg, Vr.Canon) %>%
         arrange((Total.aseg)) %>%
         dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
         head(2)
@@ -754,11 +767,11 @@ server <- function(input, output, session) {
     #Creating scatter plot for relationship using ggplot
     
     sc <- datos %>%
-      ggplot(aes(x=get(input$var3), y =get(input$var4), color= CentroCostos)) +
-      geom_point() +
-      labs(title = paste("Diagrama de dispersión entre", input$var3, "y", input$var4),
-           x= input$var3,
-           y= input$var4) +
+      ggplot(aes(x=get(input$varx), y =get(input$vary), label= IdInmueble)) +
+      geom_point(aes(colour = (CentroCostos))) +
+      labs(title = paste("Diagrama de dispersión entre", input$varx, "y", input$vary),
+           x= input$varx,
+           y= input$vary) +
       theme(plot.title = element_textbox_simple(size=10,
                                                 halign = 0.5))
     ggplotly(sc)

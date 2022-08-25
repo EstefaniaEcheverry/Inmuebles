@@ -34,9 +34,9 @@ library(tidygeocoder)
 library(rgeoboundaries)
 #Decargar paquete de github
 # install.packages("remotes")
-#remotes::install_github("wmgeolab/rgeoboundaries")
+remotes::install_github("wmgeolab/rgeoboundaries")
 #Cargar la base de datos
-#setwd("~/Inmuebles Arrendados/Portada Inmobiliaria/Inmuebles_Arrendados")
+setwd("~/Inmuebles Arrendados/Portada Inmobiliaria/Inmuebles_Arrendados")
 inmuact_new <- read_excel("data/datos_nuevos.xls")
 # Comienzo de la base de datos
 #head(inmuact_new)
@@ -550,10 +550,6 @@ inmuact_newfil$localizaciones <- localizaciones
 inmuebles_act <- inmuact_newfil[is.element(inmuact_newfil$Bloqueado, "False" ), ]
 inmuebles_bloq <- inmuact_newfil[is.element(inmuact_newfil$Bloqueado, "True"),  ]
 ```
-```{r}
-localizaciones
-```
-
 
 ```{r, echo= FALSE,warning=FALSE, message=FALSE}
 # Agrupación por direcciones y localizaciones
