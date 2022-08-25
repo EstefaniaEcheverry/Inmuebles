@@ -58,6 +58,11 @@ datos$Tipo_de_Inmueble <- (datos$ Valor.Iva >0)
 filtro=datos$Tipo_de_Inmueble
 datos$Tipo_de_Inmueble[filtro==F]<-'Vivienda'
 datos$Tipo_de_Inmueble[filtro]<-'Comercial'
+datos_b$Tipo_de_Inmueble <- (datos_b$ Valor.Iva >0)
+
+filtro=datos_b$Tipo_de_Inmueble
+datos_b$Tipo_de_Inmueble[filtro==F]<-'Vivienda'
+datos_b$Tipo_de_Inmueble[filtro]<-'Comercial'
 #  Choices for selectInput 
 c1 = datos %>% select(c(13:15))%>%
   names()
@@ -401,35 +406,45 @@ server <- function(input, output, session) {
   #################
   sum_pesos<-function(vector){
     total=sum(vector)
-    paste('$' ,formatC(total,big.mark = '.',format='fg'))
+    paste('$' ,formatC(total,big.mark = '.',decimal.mark=',',format='fg'))
   }
 
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
-  tabla_centroc <- datos %>% group_by(CentroCostos) %>% 
-    #Vr.Canon_punto <- format(sum(Vr.Canon), big.mark =".") %>%
-    summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), N_Vivienda = sum(Tipo_de_Inmueble == "Vivienda"),
-              N_Comercial = sum(Tipo_de_Inmueble == "Comercial"))  %>%  
-    dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))
+  tabla_centroc <- datos %>% group_by(CentroCostos) %>%
+    summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
+              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"))  %>%  
+    dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))%>%
+    dplyr::mutate(Var=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda:',
+                            N_Vivienda,'.\n Comercial: ',N_Comercial,
+                            '.\n Porcentaje: ',Porcentaje,'.',sep=''),
+                  Var_prop=paste(Total.c," ", "", "\n(", Porcentaje, "%",")"))
  
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc1 <- datos_b %>% group_by(CentroCostos) %>%
-    summarise(Total.c=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
-    dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))
-  
+    summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
+              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"))  %>%  
+    dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))%>%
+    dplyr::mutate(Var=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda:',
+                            N_Vivienda,'.\n Comercial: ',N_Comercial,
+                            '.\n Porcentaje: ',Porcentaje,'.',sep=''),
+                  Var_prop=paste(Total.c," ", "", "\n(", Porcentaje, "%",")"))  
   # Barplot de Frecuencia de la variable Centro de Costos
   output$barcc <- renderPlotly({
     if (input$var7=='Activos'){
   
       # Gráfica de Centro total de Costos
       p4 <- tabla_centroc %>% ggplot(aes(x=CentroCostos, y =Total.c, 
-                                         fill=(CentroCostos),label=Vr.Canon,N_Vivienda,N_Comercial)) +
+                                         fill=(CentroCostos),label=Var )) +
+    
         geom_bar(width = 0.9, stat="identity")+  
         
         ylim(c(0,1100))+
         labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
-        geom_text(aes(label=paste0(Total.c," ", "", "\n(", Porcentaje, "%",")")),  
+        geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
                   color="black",                     
                   hjust=0.5,                         
@@ -449,14 +464,14 @@ server <- function(input, output, session) {
     
       # Gráfica de Centro total de Costos
       p4 <- tabla_centroc1 %>% ggplot(aes(x=CentroCostos, y =Total.c,
-                                         fill=CentroCostos,label=Vr.Canon )) +
+                                         fill=CentroCostos,label=Var )) +
         geom_bar(width = 0.9, stat="identity")+  
         
         ylim(c(0,15))+
         labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
-        geom_text(aes(label=paste0(Total.c," ", "", "\n(", Porcentaje, "%",")")),  
+        geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
                   color="black",                     
                   hjust=0.5,                         
