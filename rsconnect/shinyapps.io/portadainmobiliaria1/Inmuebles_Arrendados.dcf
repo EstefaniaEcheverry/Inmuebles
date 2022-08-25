@@ -1,0 +1,14 @@
+name: Inmuebles_Arrendados
+title: Inmuebles_Arrendados
+username:
+account: portadainmobiliaria1
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 6792823
+bundleId: 6230380
+url: https://portadainmobiliaria1.shinyapps.io/Inmuebles_Arrendados/
+when: 1661277439.41711
+lastSyncTime: 1661277439.41713
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|Inmueble_Arriendo.Rmd
