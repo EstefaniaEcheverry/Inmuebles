@@ -26,8 +26,9 @@ library(tidygeocoder)
 library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
+
 #Crear el objeto de base de datos 
-datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
+  datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
 datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
 direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
 direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
@@ -52,7 +53,7 @@ datos <- datos %>%
 datos <- datos %>%
   rename(Longitud = localizaciones.long) 
 datos <- datos %>% rename(c( "Apt/Casa" = "palabras_apa" ,  "localizaciones" =
-                               "localizaciones.address"))
+"localizaciones.address"))
 datos$Tipo_de_Inmueble <- (datos$ Valor.Iva >0)
 
 filtro=datos$Tipo_de_Inmueble
@@ -74,140 +75,150 @@ n1<-length(c4)
 c4=c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
-  dashboardPage(
-    skin = "blue",
-    title = "Inmuebles de Portada Inmobiliaria",
-    dashboardHeader(title=span(img(src = "logo Portada.png", height = 35), "Inmuebles de Portada Inmobiliaria"),
-                    titleWidth = 400, 
-                    tags$li(class="dropdown",tags$a(href="https://portadainmobiliaria.com/", icon("building"), "Portada", target="_blank")),
-                    tags$li(class="dropdown",tags$a(href="https://www.linkedin.com/in/estefania-echeverry-franco-932597232/" ,icon("linkedin"), "My Profile", target="_blank")),
-                    tags$li(class="dropdown",tags$a(href="https://github.com/EstefaniaEcheverry/Inmuebles", icon("github"), "Source Code", target="_blank"))
-    ),
-    dashboardSidebar(
-      #sidebarmenu
-      sidebarMenu(
-        id="sidebar",
-        fluidRow(style='height:5vh'),
-        #first menuitem
-        menuItem("Dataset", tabName="data", icon=icon("database")),
-        conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.1' ",
-                         selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
-                                     choices =c('Activos','Bloqueados'))),  
-        conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.2' ",
-                         selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
-                                     choices =c('Activos','Bloqueados'))),  
-        conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.3' ",
-                         selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
-                                     choices =c('Activos','Bloqueados'))),  
-        menuItem(text= "Visualization",tabName = "viz",icon = icon("chart-line")),
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'trendscc'",
-                         selectInput(inputId ="var7" ,label= "Seleccione por tipo de inmueble",
-                                     choices =c('Activos','Bloqueados')), selected="Activos"),
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'trendsc'",
-                         selectInput(inputId ="var8" ,label= "Seleccione por tipo de inmueble",
-                                     choices =c('Activos','Bloqueados')), selected="Activos"), 
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'trendsap'",
-                         selectInput(inputId ="var9" ,label= "Seleccione por tipo de inmueble",
-                                     choices =c('Activos','Bloqueados')), selected="Activos"), 
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'distro'",
-                         selectInput(inputId ="var1" ,label= "Seleccione la variable X",
-                                     choices =c1 ,selected="Vr.Canon")),
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
-                         selectInput(inputId ="varx" ,label= "Seleccione la variable X",
-                                     choices =c1 ,selected="Vr.Canon")),
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
-                         selectInput(inputId ="varxy_" ,label= "Seleccione el tipo de inmueble",
-                                     choices =unique(datos$Tipo_de_Inmueble),multiple = TRUE )),
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation'" ,
-                         selectInput(inputId ="vary" ,label= "Seleccione la variable Y",
-                                     choices =c1 ,selected="Vr.Administracion")),
-        conditionalPanel("input.sidebar == 'viz' && input.t2 == 'boxpl'",
-                         selectInput(inputId ="var2" ,label= "Seleccione la variable",
-                                     choices =c1 ,selected="Vr.Canon")),
-        menuItem(text= "Inmuebles Map",tabName = "map",icon = icon("map")),
-        conditionalPanel("input.sidebar == 'map'",
-                         selectInput(inputId ="var5" ,label= "Seleccione el Centro de Costos",
-                                     choices =c3,multiple = TRUE )) ,
-        conditionalPanel("input.sidebar == 'map'",
-                         selectInput(inputId ="var6" ,label= "Seleccione una columna de descripción por punto",
-                                     choices =c4,multiple = TRUE ))   
-      )
-    ),  
-    dashboardBody(
-      tabItems(
-        # first tab item
-        tabItem(tabName = "data",
-                tabBox(id="t1",width= 12,
-                       fluidRow(style='height:5vh'),
-                       tabPanel(title="Información",icon = icon("address-card"),fluidRow(
-                         column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
-                                align = "center"),
-                         column(width = 4, tags$br() ,
-                                tags$p("Son 5483 inmuebles controlados por los diferentes Centros de costos , 
+dashboardPage(
+  skin = "blue",
+  title = "Inmuebles de Portada Inmobiliaria",
+  dashboardHeader(title=span(img(src = "logo Portada.png", height = 35), "Inmuebles de Portada Inmobiliaria"),
+                  titleWidth = 400, 
+                  tags$li(class="dropdown",tags$a(href="https://portadainmobiliaria.com/", icon("building"), "Portada", target="_blank")),
+                  tags$li(class="dropdown",tags$a(href="https://www.linkedin.com/in/estefania-echeverry-franco-932597232/" ,icon("linkedin"), "My Profile", target="_blank")),
+                  tags$li(class="dropdown",tags$a(href="https://github.com/EstefaniaEcheverry/Inmuebles", icon("github"), "Source Code", target="_blank"))
+  ),
+  dashboardSidebar(
+    #sidebarmenu
+    sidebarMenu(
+      id="sidebar",
+      fluidRow(style='height:5vh'),
+      #first menuitem
+      menuItem("Dataset", tabName="data", icon=icon("database")),
+      conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.1' ",
+                       selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
+                                   choices =c('Activos','Bloqueados'))),  
+      conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.2' ",
+                       selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
+                                   choices =c('Activos','Bloqueados'))),  
+      conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.3' ",
+                       selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
+                                   choices =c('Activos','Bloqueados'))),  
+      menuItem(text= "Visualization",tabName = "viz",icon = icon("chart-line")),
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'trendscc'",
+                       selectInput(inputId ="var7" ,label= "Seleccione por tipo de inmueble",
+                                   choices =c('Activos','Bloqueados')), selected="Activos"),
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'trendsc'",
+                       selectInput(inputId ="var8" ,label= "Seleccione por tipo de inmueble",
+                                   choices =c('Activos','Bloqueados')), selected="Activos"), 
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'trendsap'",
+                       selectInput(inputId ="var9" ,label= "Seleccione por tipo de inmueble",
+                                   choices =c('Activos','Bloqueados')), selected="Activos"), 
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'distro'",
+                       selectInput(inputId ="var1" ,label= "Seleccione la variable X",
+                                   choices =c1 ,selected="Vr.Canon")),
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
+                       selectInput(inputId ="varx" ,label= "Seleccione la variable X",
+                                   choices =c1 ,selected="Vr.Canon")),
+
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation'" ,
+                       selectInput(inputId ="vary" ,label= "Seleccione la variable Y",
+                                   choices =c1 ,selected="Vr.Administracion")),
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'boxpl'",
+                       selectInput(inputId ="var2" ,label= "Seleccione la variable",
+                                   choices =c1 ,selected="Vr.Canon")),
+      menuItem(text= "Inmuebles Map",tabName = "map",icon = icon("map")),
+      conditionalPanel("input.sidebar == 'map'",
+                       selectInput(inputId ="var5" ,label= "Seleccione el Centro de Costos",
+                                   choices =c3,multiple = TRUE )) ,
+      conditionalPanel("input.sidebar == 'map'",
+                       selectInput(inputId ="var6" ,label= "Seleccione una columna de descripción por punto",
+                                   choices =c4,multiple = TRUE ))   
+    )
+  ),  
+  dashboardBody(
+    tabItems(
+      # first tab item
+      tabItem(tabName = "data",
+              tabBox(id="t1",width= 12,
+                     fluidRow(style='height:5vh'),
+                     tabPanel(title="Información",icon = icon("address-card"),fluidRow(
+                       column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
+                              align = "center"),
+                       column(width = 4, tags$br() ,
+                              tags$p("Son 5483 inmuebles controlados por los diferentes Centros de costos , 
                                      segun los datos 24 de estos inmuebles estan bloqueados o desactivados,
                                      es decir, existen 5459 inmuebles activos distribuidos por los centros 
                                      de costos; Los Colores maneja 1056 de estos inmuebles y Laureles 871 
                                      inmuebles. ")
-                         )
                        )
-                       
-                       
-                       ), 
-                       tabPanel(title="Datos",icon = icon("address-card"),value= "datos.1", DT::dataTableOutput("dataT")),
-                       tabPanel(title="Estructura",icon = icon("address-card"),value= "datos.2",verbatimTextOutput("structure")),
-                       tabPanel(title="Resumen estadísticas",icon = icon("address-card"),value= "datos.3",verbatimTextOutput("summary"))
-                )
-        ),
-        # second tab item or landing page here ..
-        tabItem(tabName = "viz",
-                tabBox(id="t2", width=20,
-                       fluidRow(style='height:5vh'),
-                       tabPanel(title="Centro de Costos",icon = icon("building"), value="trendscc",
-                                fluidRow(tags$div(align="center", box(tableOutput("top5"), title = textOutput("head1"),
-                                                                      collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
-                                         tags$div(align="center", box(tableOutput("low6"), title = textOutput("head2") ,
-                                                                      collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
-                                withSpinner(plotlyOutput("barcc"))),
-                       tabPanel(title="Ciudad",icon = icon("city"), value="trendsc",
-                                fluidRow(tags$div(align="center", box(tableOutput("top5.1"), title = textOutput("head3"),
-                                                                      collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
-                                         tags$div(align="center", box(tableOutput("low5"), title = textOutput("head4") ,
-                                                                      collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
-                                withSpinner(plotlyOutput("barciu"))),
-                       tabPanel(title="Aseguradora",icon = icon("address-book"), value="trendsap",
-                                fluidRow(tags$div(align="center", box(tableOutput("top3"), title = textOutput("head5"),
-                                                                      collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
-                                         tags$div(align="center", box(tableOutput("low4"), title = textOutput("head6") ,
-                                                                      collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
-                                withSpinner(plotlyOutput("baraseg"))),
-                       tabPanel(title="Distribución",icon = icon("chart-line"),target="", value="distro",withSpinner(plotlyOutput("histplot", height = "350px"))),
-                       tabPanel(title="Box Plots",icon = icon("chart-line"),value="boxpl",withSpinner(plotlyOutput("boxplot", height = "350px"))),
-                       tabPanel(title="Scatterplot ",icon =icon("chart-line"),value="relation", withSpinner(plotlyOutput("scatter")))
-                )
-        ),
-        tabItem(tabName="map",
-                tabBox(id="t3",width= 12,
-                       tabPanel(title="Inmuebles",
-                                fluidPage(
-                                  fluidRow(
-                                    br(),
-                                    (tmapOutput( "map_plot"))),                                
-                                  fluidRow(
-                                    ( DT::dataTableOutput('data_filtro')) )
-                                  
-                                )),
-                       tabPanel(title="Bloqueados",
-                                fluidPage(fluidRow(br(),
-                                                   withSpinner(tmapOutput(outputId = "map_plot_b"))),
-                                          fluidRow(
-                                            ( DT::dataTableOutput('data_filtro_b')) )
-                                )
-                                
-                       ))
-        )
+                     )
+                     
+                     
+                     ), 
+                     tabPanel(title="Datos",icon = icon("address-card"),value= "datos.1", DT::dataTableOutput("dataT")),
+                     tabPanel(title="Estructura",icon = icon("address-card"),value= "datos.2",verbatimTextOutput("structure")),
+                     tabPanel(title="Resumen estadísticas",icon = icon("address-card"),value= "datos.3",verbatimTextOutput("summary"))
+              )
+      ),
+      # second tab item or landing page here ..
+      tabItem(tabName = "viz",
+              tabBox(id="t2", width=20,
+                     fluidRow(style='height:5vh'),
+                     tabPanel(title="Centro de Costos",icon = icon("building"), value="trendscc",
+                              fluidRow(tags$div(align="center", box(tableOutput("top5"), title = textOutput("head1"),
+                                                                    collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
+                                       tags$div(align="center", box(tableOutput("low6"), title = textOutput("head2") ,
+                                                                    collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
+                              withSpinner(plotlyOutput("barcc"))),
+                     tabPanel(title="Ciudad",icon = icon("city"), value="trendsc",
+                              fluidRow(tags$div(align="center", box(tableOutput("top5.1"), title = textOutput("head3"),
+                                                                    collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
+                                       tags$div(align="center", box(tableOutput("low5"), title = textOutput("head4") ,
+                                                                    collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
+                              withSpinner(plotlyOutput("barciu"))),
+                     tabPanel(title="Aseguradora",icon = icon("address-book"), value="trendsap",
+                              fluidRow(tags$div(align="center", box(tableOutput("top3"), title = textOutput("head5"),
+                                                                    collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
+                                       tags$div(align="center", box(tableOutput("low4"), title = textOutput("head6") ,
+                                                                    collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
+                              withSpinner(plotlyOutput("baraseg"))),
+                     tabPanel(title="Distribución",icon = icon("chart-line"),target="", value="distro",
+                              radioButtons(inputId ="inmueble_dis" , label = "Selecione tipo de inmueble"
+                                           , choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
+                              withSpinner(plotlyOutput("histplot", height = "350px"))),
+                     tabPanel(title="Box Plots",icon = icon("chart-line"),value="boxpl",
+                              radioButtons(inputId ="inmueble_box" , label = "Selecione tipo de inmueble"
+                                           , choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
+                              radioButtons(inputId ="inmueble_ab_box" , label = "Seleccione por tipo de inmueble"
+                                           , choices = c('Activos','Bloqueados') , inline = TRUE),
+                              withSpinner(plotlyOutput("boxplot", height = "350px"))
+                               ),
+                     tabPanel(title="Scatterplot ",icon =icon("chart-line"),value="relation",
+                              radioButtons(inputId ="inmueble_scatter" , label = "Selecione tipo de inmueble"
+                                           ,choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
+                              withSpinner(plotlyOutput("scatter")))
+              )
+      ),
+      tabItem(tabName="map",
+              tabBox(id="t3",width= 12,
+                     tabPanel(title="Inmuebles",
+                              fluidPage(
+                                fluidRow(
+                                  br(),
+                                  (tmapOutput( "map_plot"))),                                
+                                fluidRow(
+                                  ( DT::dataTableOutput('data_filtro')) )
+
+                      )),
+                     tabPanel(title="Bloqueados",
+                              fluidPage(fluidRow(br(),
+                                withSpinner(tmapOutput(outputId = "map_plot_b"))),
+                                fluidRow(
+                                  ( DT::dataTableOutput('data_filtro_b')) )
+                              )
+                     
+                     ))
       )
     )
   )
+)
 )
 
 # Definción de la funcionalidad lógica de la aplicación (servidor)
@@ -217,7 +228,7 @@ server <- function(input, output, session) {
   #####################
   ################################################################
   # Crear mapa con geoboundaries escogiendo solo los municipios
-  
+
   area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
     filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
                                   "BELLO",    # estan en mayuscula y no estan
@@ -258,8 +269,8 @@ server <- function(input, output, session) {
     st_transform(crs = 3857) %>%
     st_intersection(area_metropolitana)
   
-  
-  output$map_plot<- renderTmap({
+
+    output$map_plot<- renderTmap({
     if (is.null(input$var5) ){
       direcciones_sf_filtro<-direcciones_sf
     }
@@ -271,24 +282,24 @@ server <- function(input, output, session) {
     }
     else{
       columnas_mostrar<-input$var6
-      
+
     }
     # Mapa del aréa metropolitana con los inmuebles 
     tmap_mode('view') %>%
-      tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
-    
+        tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
+        tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
+ 
   })  
   
   output$data_filtro<- DT::renderDataTable({
-    if ( sum(names(input) == 'map_plot_marker_click')==1 ){
-      
-      click<-input$map_plot_marker_click
-      direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
-                                        'Direcciones_c']
-      datos_print<- datos[datos$Direcciones_c==direccion_print,]  
-      datos_print
-    }
+   if ( sum(names(input) == 'map_plot_marker_click')==1 ){
+
+    click<-input$map_plot_marker_click
+    direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
+                                      'Direcciones_c']
+    datos_print<- datos[datos$Direcciones_c==direccion_print,]  
+    datos_print
+   }
     else{
       datos
     }
@@ -310,7 +321,7 @@ server <- function(input, output, session) {
     }
     else{
       columnas_mostrar<-input$var6
-      
+
     }
     # Mapa del aréa metropolitana con los inmuebles 
     tmap_mode('view') %>%
@@ -322,7 +333,7 @@ server <- function(input, output, session) {
       
       click<-input$map_plot_b_marker_click
       direccion_print<-direccion_unique_b[paste('X',direccion_unique$indice,sep="")==click$id ,
-                                          'Direcciones_c']
+                                        'Direcciones_c']
       datos_print<- datos_b[datos_b$Direcciones_c==direccion_print,]  
       datos_print
     }
@@ -332,9 +343,9 @@ server <- function(input, output, session) {
   }, options = list(scrollX = TRUE) )
   # reactive values for map
   
+
   
-  
-  
+
   output$structure <- renderPrint(
     if (input$var0=='Activos'){
       datos %>% str()
@@ -345,7 +356,7 @@ server <- function(input, output, session) {
     }
     
   )
-  
+
   # Summary 
   output$summary <- renderPrint(
     # Resumen de los datos 
@@ -359,16 +370,16 @@ server <- function(input, output, session) {
   # DataTable
   output$dataT <- DT::renderDataTable(
     DT::datatable({
-      if (input$var0=='Activos'){
-        datos
-      }
-      else{
-        datos_b
-        
-      }}
-      , options = list(scrollX = TRUE) 
+    if (input$var0=='Activos'){
+      datos
+    }
+    else{
+      datos_b
       
-    ))
+    }}
+    , options = list(scrollX = TRUE) 
+    
+  ))
   # DataTable
   output$dataInmu <- renderDataTable(
     direccion_unique
@@ -378,12 +389,15 @@ server <- function(input, output, session) {
   # Stacked histogram and boxplot
   output$histplot <- renderPlotly({
     
-    datos_<-datos[ datos[,input$var1]>0, ]
-    registos_0<-nrow(datos)-nrow(datos_)
+    datos_<-datos[ datos[,input$var1]>0 & is.element(datos$Tipo_de_Inmueble, input$inmueble_dis), ]
+    n_re<-nrow(datos[is.element(datos$Tipo_de_Inmueble, input$inmueble_dis), ])
+    registos_0<-n_re-nrow(datos_)
+    print(registos_0)
     texto_add<-''
     if (registos_0>0){
-      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(nrow(datos)),sep='')
+      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(n_re),sep='')
     }
+    if (nrow(datos_)>0){
     p1 <- datos_ %>%
       plot_ly( ) %>%
       add_histogram(~get(input$var1)) %>%
@@ -398,11 +412,17 @@ server <- function(input, output, session) {
       hide_legend() %>%
       layout(title=paste("Gráfico de distribución - Histograma y Boxplot \n ",texto_add,sep=''  ) ,
              yaxis=list(title="Frecuencia"))
+    }
+    else{
+      ggplot() + 
+        annotate("text", x = 4, y = 25, size=8, label = texto_add) + 
+        theme_void()
+    }
     
   })
-  
-  
-  
+
+
+ 
   
   ### Bar Charts - State wise trend
   
@@ -417,7 +437,7 @@ server <- function(input, output, session) {
     vector_resultado[filtro]<-vector_[filtro]
     return(vector_resultado)
   }
-  
+
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc <- datos %>% group_by(CentroCostos) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
@@ -429,10 +449,10 @@ server <- function(input, output, session) {
               Vr.canon_v=sum_pesos(Vr.canon_v))  %>%  
     dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))%>%
     dplyr::mutate(General=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda: \n Frec: ',
-                                N_Vivienda,'. \n Canon Vivienda: ',Vr.canon_v,'.\n Comercial: \n Frec: ',N_Comercial,
-                                '. \n Canon Comercial: ',Vr.canon_c,'.\n Porcentaje: ',Porcentaje,'.',sep=''),
+                            N_Vivienda,'. \n Canon Vivienda: ',Vr.canon_v,'.\n Comercial: \n Frec: ',N_Comercial,
+                            '. \n Canon Comercial: ',Vr.canon_c,'.\n Porcentaje: ',Porcentaje,'.',sep=''),
                   Var_prop=paste("   ",Total.c," ", "", "\n",Porcentaje,"%"))
-  
+ 
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc1 <- datos_b %>% group_by(CentroCostos) %>%
     summarise(Total.c=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
@@ -441,11 +461,11 @@ server <- function(input, output, session) {
   # Barplot de Frecuencia de la variable Centro de Costos
   output$barcc <- renderPlotly({
     if (input$var7=='Activos'){
-      
+  
       # Gráfica de Centro total de Costos
       p4 <- tabla_centroc %>% ggplot(aes(x=CentroCostos, y =Total.c, 
                                          fill=(CentroCostos),label=General )) +
-        
+    
         geom_bar(width = 0.9, stat="identity")+  
         
         ylim(c(0,1100))+
@@ -469,7 +489,7 @@ server <- function(input, output, session) {
       ggplotly(p4)
     }
     else{
-      
+    
       # Gráfica de Centro total de Costos
       p4 <- tabla_centroc1 %>% ggplot(aes(x=CentroCostos, y =Total.c,
                                           fill=CentroCostos,label=Vr.Canon )) +
@@ -499,7 +519,7 @@ server <- function(input, output, session) {
     
   })
   #############
-  
+ 
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad <- datos %>% group_by(Ciudad) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
@@ -519,12 +539,13 @@ server <- function(input, output, session) {
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad1 <- datos_b %>% group_by(Ciudad) %>%
     summarise(Total.ciudad=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
-    dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1))
+    dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
+    dplyr::mutate(Var_prop=paste("   ",Total.ciudad," ", "", "\n",Porcentaje,"%"))
   
   # Barplot de Frecuencia de la variable Ciudad
   output$barciu <- renderPlotly({
     if (input$var8=='Activos'){
-      
+    
       # Gráfica de Centro total de Costos
       p5 <- tabla_ciudad %>% ggplot(aes(x=Ciudad, y = Total.ciudad, fill=Ciudad,
                                         label=General)) + 
@@ -562,7 +583,7 @@ server <- function(input, output, session) {
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
                                                         "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr","Bogota")) +                                            
         
-        geom_text(aes(label=paste0(Total.ciudad," ", "", "\n", Porcentaje, "%")),  
+        geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
                   color="black",                     
                   hjust=0.5,                         
@@ -602,7 +623,7 @@ server <- function(input, output, session) {
   output$baraseg <- renderPlotly({
     
     if (input$var9=='Activos'){
-      
+    
       
       # Gráfica de Aseguradora
       p8 <- tabla_aseg %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora ,label=General)) + 
@@ -626,8 +647,8 @@ server <- function(input, output, session) {
       ggplotly(p8)
     }
     else{
-      
-      # Gráfica de Aseguradora
+   
+     # Gráfica de Aseguradora
       p9 <- tabla_aseg1 %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora,label=Vr.Canon )) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
         ylim(c(0,20))+
@@ -648,7 +669,7 @@ server <- function(input, output, session) {
         theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1))
       ggplotly(p9)
     }
-    
+  
   })
   
   # Codigo del server para los resumenes que se abren
@@ -666,17 +687,17 @@ server <- function(input, output, session) {
   # Top 5  con mayor # de inmuebles Centro Costos 
   output$top5 <- renderTable({
     if (input$var7=='Activos'){
-      # Tabla total de cada ciudad y porcentajes por Centro de Costos
+    # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc  %>%
         select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(5)
-      
-      
+     
+        
     }
     else{
-      # Tabla total de cada ciudad y porcentajes por Centro de Costos
+     # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc1  %>%
         select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
@@ -706,7 +727,7 @@ server <- function(input, output, session) {
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(7)
     } 
-    
+
   })
   
   # Rendering the box header  
@@ -722,11 +743,11 @@ server <- function(input, output, session) {
   # Top 5  con mayor # de inmuebles Ciudad
   output$top5.1 <- renderTable({
     if (input$var8=='Activos'){
-      tabla_ciudad  %>%
-        select(Ciudad, Total.ciudad, Vr.Canon) %>%
-        arrange(desc((Total.ciudad))) %>%
-        dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(5)
+    tabla_ciudad  %>%
+      select(Ciudad, Total.ciudad, Vr.Canon) %>%
+      arrange(desc((Total.ciudad))) %>%
+      dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
+      head(5)
     }
     else{
       tabla_ciudad1  %>%
@@ -740,11 +761,11 @@ server <- function(input, output, session) {
   # Top 5 con menor # de inmuebles Ciudad
   output$low5 <- renderTable({
     if (input$var8=='Activos'){
-      tabla_ciudad %>%
-        select(Ciudad, Total.ciudad, Vr.Canon) %>%
-        arrange(Total.ciudad) %>%
-        dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(6)
+    tabla_ciudad %>%
+      select(Ciudad, Total.ciudad, Vr.Canon) %>%
+      arrange(Total.ciudad) %>%
+      dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
+      head(6)
     }
     else{
       tabla_ciudad1 %>%
@@ -769,11 +790,11 @@ server <- function(input, output, session) {
   # Top 3 con mayor # de inmuebles Aseguradoras 
   output$top3 <- renderTable({
     if (input$var9=='Activos'){
-      tabla_aseg  %>%
-        select(Aseguradora, Total.aseg, Vr.Canon) %>%
-        arrange(desc((Total.aseg))) %>%
-        dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
-        head(3)
+    tabla_aseg  %>%
+      select(Aseguradora, Total.aseg, Vr.Canon) %>%
+      arrange(desc((Total.aseg))) %>%
+      dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
+      head(3)
     }
     else{
       tabla_aseg1  %>%
@@ -790,11 +811,11 @@ server <- function(input, output, session) {
   # Top 4 con menor # de inmuebles Aseguradoras
   output$low4 <- renderTable({
     if (input$var9=='Activos'){
-      tabla_aseg  %>%
-        select(Aseguradora, Total.aseg, Vr.Canon) %>%
-        arrange((Total.aseg)) %>%
-        dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
-        head(4)
+    tabla_aseg  %>%
+      select(Aseguradora, Total.aseg, Vr.Canon) %>%
+      arrange((Total.aseg)) %>%
+      dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
+      head(4)
     }
     else{
       tabla_aseg1  %>%
@@ -808,13 +829,7 @@ server <- function(input, output, session) {
   #Scatter plot
   output$scatter <- renderPlotly({
     
-    #Creating scatter plot for relationship using ggplot
-    if (is.null(input$varxy_) ){
-      datos_plot<-datos
-    }
-    else{
-      datos_plot<-datos[is.element(datos$Tipo_de_Inmueble,input$varxy_),]
-    }
+      datos_plot<-datos[is.element(datos$Tipo_de_Inmueble,input$inmueble_scatter),]
     sc <- datos_plot %>%
       ggplot(aes(x=get(input$varx), y =get(input$vary), label= IdInmueble)) +
       geom_point(aes(colour = (CentroCostos))) +
@@ -828,13 +843,27 @@ server <- function(input, output, session) {
   
   output$boxplot <- renderPlotly({
     # Box Plot
-    datos_<-datos[ datos[,input$var2]>0, ]
-    registos_0<-nrow(datos)-nrow(datos_)
+    if (input$inmueble_ab_box=='Activos'){
+      datos_box<-datos
+    }
+    else{
+      datos_box<-datos_b
+    }
+    filtro<-(is.element(datos_box$Tipo_de_Inmueble,input$inmueble_box) )
+      
+    datos_<-datos_box[filtro  & datos_box[,input$var2]>0, ]
+    n_re<-nrow(datos_box[filtro,])
+    registos_0<-n_re-nrow(datos_)
     texto_add<-''
     if (registos_0>0){
-      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(nrow(datos)),sep='')
+      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(n_re),sep='')
     }
-    
+    else if(  nrow(datos_)==0){
+      texto_add<- 'No hay registros \n que cumplan la condicón'
+      
+    }
+    print(registos_0)
+    if (nrow(datos_)>0){
     datos_ %>%
       plot_ly() %>%
       add_boxplot(x = datos_$CentroCostos,y=datos_[,input$var2],# data = datos_,
@@ -842,9 +871,16 @@ server <- function(input, output, session) {
       layout(title=paste('Gráfico de box-plot de ',input$var2, ' por Centro de Costos \n' ,texto_add,sep=''),
              yaxis=list(title="Frecuencia"))
     
-  })
+    }
+    else{
+      ggplot() + 
+        annotate("text", x = 4, y = 25, size=8, label = texto_add) + 
+        theme_void()
+
+    }
+      })
   
-  
+
 }
 
 #Configuración tematica de los gráficos al estilo de la aplicación
@@ -852,6 +888,4 @@ server <- function(input, output, session) {
 
 #Definición de la aplicación
 shinyApp(ui = ui, server = server)
-
-
 
