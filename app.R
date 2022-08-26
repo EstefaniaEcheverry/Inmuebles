@@ -185,6 +185,8 @@ dashboardPage(
                      tabPanel(title="Box Plots",icon = icon("chart-line"),value="boxpl",
                               radioButtons(inputId ="inmueble_box" , label = "Selecione tipo de inmueble"
                                            , choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
+                              radioButtons(inputId ="inmueble_ab_box" , label = "Seleccione por tipo de inmueble"
+                                           , choices = c('Activos','Bloqueados') , inline = TRUE),
                               withSpinner(plotlyOutput("boxplot", height = "350px"))
                                ),
                      tabPanel(title="Scatterplot ",icon =icon("chart-line"),value="relation",
@@ -840,13 +842,26 @@ server <- function(input, output, session) {
   
   output$boxplot <- renderPlotly({
     # Box Plot
-    datos_<-datos[ is.element(datos$Tipo_de_Inmueble,input$inmueble_box) & datos[,input$var2]>0, ]
-    n_re<-nrow(datos[is.element(datos$Tipo_de_Inmueble,input$inmueble_box),])
+    if (input$inmueble_ab_box=='Activos'){
+      datos_box<-datos
+    }
+    else{
+      datos_box<-datos_b
+    }
+    filtro<-(is.element(datos_box$Tipo_de_Inmueble,input$inmueble_box) )
+      
+    datos_<-datos_box[filtro  & datos_box[,input$var2]>0, ]
+    n_re<-nrow(datos_box[filtro,])
     registos_0<-n_re-nrow(datos_)
     texto_add<-''
     if (registos_0>0){
       texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(n_re),sep='')
     }
+    else if(  nrow(datos_)==0){
+      texto_add<- 'No hay registros \n que cumplan la condicón'
+      
+    }
+    print(registos_0)
     if (nrow(datos_)>0){
     datos_ %>%
       plot_ly() %>%
