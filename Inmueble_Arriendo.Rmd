@@ -52,7 +52,7 @@ inmuact_newfil <- inmuact_new[is.element(inmuact_new$CentroCostos, c("01","02","
 # Buscar la posición de Rionegro en la variable Ciudad
 #which(inmuact_newfil$Ciudad == "RIONEGRO")
 # Cambiar la ciudad Rionegro por Medellin, falla de asignación de la ciudad
-inmuact_newfil[3420, 7] <- "MEDELLIN"
+inmuact_newfil[3406, 7] <- "MEDELLIN"
 #inmuact_newfil[3468, 2] <- "01"
 # Nueva variable con nombre de los sectores seleccionados
 inmuact_newfil$CentroCostos_n <- factor(inmuact_newfil$CentroCostos, labels = c("Laureles","Sabaneta","Poblado","Colores","Envigado","Itagui","Centro","Bello","La estrella", "San Antonio Pr." , "Calasanz","Fontibon"))
@@ -70,7 +70,7 @@ tabla_cc <- inmuebles_act %>% group_by(CentroCostos_n) %>% summarise(Total=n()) 
 ggplot(tabla_cc, aes(x=CentroCostos_n, y = Total, fill=CentroCostos_n )) + geom_bar( stat="identity"              
            )+  
   
-  ylim(c(0,1060))+
+  ylim(c(0,1065))+
   labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable centro de costos") +   
   labs(fill = "")+                                         
   
@@ -87,6 +87,7 @@ ggplot(tabla_cc, aes(x=CentroCostos_n, y = Total, fill=CentroCostos_n )) + geom_
   
   theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
   theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+
 ```
 ```{r, echo=FALSE, warning=FALSE}
 # Tabla de conteos y porcentajes de centro de costes
@@ -293,7 +294,7 @@ theme (plot.title = element_text(family="Comic Sans MS",
 ```
 ```{r, echo=FALSE, warning=FALSE,fig.align="center"}
 # Gráfico de dispersión de Vr. Canon vs Valor Administración
-ggplot(inmuebles_bloq, aes(x=`Vr Canon`, y=`Vr Administracion`, color=CentroCostos_n)) + geom_point()+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("Diagrama de dispercion entre Valor de Canon vs el Valor de AdministraciOn") +
+ggplot(inmuebles_bloq, aes(x=`Vr Canon`, y=`Vr Administracion`, color=CentroCostos_n)) + geom_point()+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("Diagrama de dispercion entre Valor de Canon vs el Valor de Administración") +
 theme (plot.title = element_text(family="Comic Sans MS",
                                   size=rel(1), #Tamaño relativo de la letra del título
                                   vjust=2, #Justificación vertical, para separarlo del gráfico
@@ -450,6 +451,27 @@ for (direccion in inmuact_newfil$Direccion){
 Direcciones_c<-c(Direcciones_c,separador(direccion))
 }
 inmuact_newfil$Direcciones_c <- Direcciones_c
+```
+
+```{r}
+# Crear una nueva variable con las direcciones sin modificar
+inmuact_newfil$inmu_direccion <- inmuact_newfil$direcciones
+```
+
+```{r}
+#Agregar los municipios de cada dirección  a inmu_direccion (OJO = SOLO CORRERLO UNA VEZ )
+lugar_punto <- paste(inmuact_newfil$Ciudad, ", COLOMBIA" , sep=" ")
+```
+
+```{r}
+# Agregar el municipio y pais a la variable inmu_direccion
+inmuact_newfil$inmu_direccion <- paste(inmuact_newfil$inmu_direccion, lugar_punto , sep=" ")
+```
+
+```{r}
+# Crear las localizaciones sin remover nada de la dirección
+# Transformar las direcciones a latitud y longitud (localizaciones)
+localizaciones_1 <- geo(address=inmuact_newfil$inmu_direccion, method="arcgis" ) 
 ```
 
 ```{r , echo= FALSE,warning=FALSE, message=FALSE}
