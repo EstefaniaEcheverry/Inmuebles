@@ -115,9 +115,7 @@ dashboardPage(
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
                        selectInput(inputId ="varx" ,label= "Seleccione la variable X",
                                    choices =c1 ,selected="Vr.Canon")),
-      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
-                       selectInput(inputId ="varxy_" ,label= "Seleccione el tipo de inmueble",
-                                   choices =unique(datos$Tipo_de_Inmueble),multiple = TRUE )),
+
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation'" ,
                        selectInput(inputId ="vary" ,label= "Seleccione la variable Y",
                                    choices =c1 ,selected="Vr.Administracion")),
@@ -180,9 +178,19 @@ dashboardPage(
                                        tags$div(align="center", box(tableOutput("low4"), title = textOutput("head6") ,
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
                               withSpinner(plotlyOutput("baraseg"))),
-                     tabPanel(title="Distribución",icon = icon("chart-line"),target="", value="distro",withSpinner(plotlyOutput("histplot", height = "350px"))),
-                     tabPanel(title="Box Plots",icon = icon("chart-line"),value="boxpl",withSpinner(plotlyOutput("boxplot", height = "350px"))),
-                     tabPanel(title="Scatterplot ",icon =icon("chart-line"),value="relation", withSpinner(plotlyOutput("scatter")))
+                     tabPanel(title="Distribución",icon = icon("chart-line"),target="", value="distro",
+                              radioButtons(inputId ="inmueble_dis" , label = "Selecione tipo de inmueble"
+                                           , choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
+                              withSpinner(plotlyOutput("histplot", height = "350px"))),
+                     tabPanel(title="Box Plots",icon = icon("chart-line"),value="boxpl",
+                              radioButtons(inputId ="inmueble_box" , label = "Selecione tipo de inmueble"
+                                           , choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
+                              withSpinner(plotlyOutput("boxplot", height = "350px"))
+                               ),
+                     tabPanel(title="Scatterplot ",icon =icon("chart-line"),value="relation",
+                              radioButtons(inputId ="inmueble_scatter" , label = "Selecione tipo de inmueble"
+                                           ,choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
+                              withSpinner(plotlyOutput("scatter")))
               )
       ),
       tabItem(tabName="map",
@@ -378,12 +386,15 @@ server <- function(input, output, session) {
   # Stacked histogram and boxplot
   output$histplot <- renderPlotly({
     
-    datos_<-datos[ datos[,input$var1]>0, ]
-    registos_0<-nrow(datos)-nrow(datos_)
+    datos_<-datos[ datos[,input$var1]>0 & is.element(datos$Tipo_de_Inmueble, input$inmueble_dis), ]
+    n_re<-nrow(datos[is.element(datos$Tipo_de_Inmueble, input$inmueble_dis), ])
+    registos_0<-n_re-nrow(datos_)
+    print(registos_0)
     texto_add<-''
     if (registos_0>0){
-      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(nrow(datos)),sep='')
+      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(n_re),sep='')
     }
+    if (nrow(datos_)>0){
     p1 <- datos_ %>%
       plot_ly( ) %>%
       add_histogram(~get(input$var1)) %>%
@@ -398,6 +409,12 @@ server <- function(input, output, session) {
       hide_legend() %>%
       layout(title=paste("Gráfico de distribución - Histograma y Boxplot \n ",texto_add,sep=''  ) ,
              yaxis=list(title="Frecuencia"))
+    }
+    else{
+      ggplot() + 
+        annotate("text", x = 4, y = 25, size=8, label = texto_add) + 
+        theme_void()
+    }
     
   })
 
@@ -519,7 +536,8 @@ server <- function(input, output, session) {
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad1 <- datos_b %>% group_by(Ciudad) %>%
     summarise(Total.ciudad=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
-    dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1))
+    dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
+    dplyr::mutate(Var_prop=paste("   ",Total.ciudad," ", "", "\n",Porcentaje,"%"))
   
   # Barplot de Frecuencia de la variable Ciudad
   output$barciu <- renderPlotly({
@@ -808,13 +826,7 @@ server <- function(input, output, session) {
   #Scatter plot
   output$scatter <- renderPlotly({
     
-    #Creating scatter plot for relationship using ggplot
-    if (is.null(input$varxy_) ){
-      datos_plot<-datos
-    }
-    else{
-      datos_plot<-datos[is.element(datos$Tipo_de_Inmueble,input$varxy_),]
-    }
+      datos_plot<-datos[is.element(datos$Tipo_de_Inmueble,input$inmueble_scatter),]
     sc <- datos_plot %>%
       ggplot(aes(x=get(input$varx), y =get(input$vary), label= IdInmueble)) +
       geom_point(aes(colour = (CentroCostos))) +
@@ -828,13 +840,14 @@ server <- function(input, output, session) {
   
   output$boxplot <- renderPlotly({
     # Box Plot
-    datos_<-datos[ datos[,input$var2]>0, ]
-    registos_0<-nrow(datos)-nrow(datos_)
+    datos_<-datos[ is.element(datos$Tipo_de_Inmueble,input$inmueble_box) & datos[,input$var2]>0, ]
+    n_re<-nrow(datos[is.element(datos$Tipo_de_Inmueble,input$inmueble_box),])
+    registos_0<-n_re-nrow(datos_)
     texto_add<-''
     if (registos_0>0){
-      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(nrow(datos)),sep='')
+      texto_add<-paste(as.character(registos_0),' registros en 0 de ',as.character(n_re),sep='')
     }
-    
+    if (nrow(datos_)>0){
     datos_ %>%
       plot_ly() %>%
       add_boxplot(x = datos_$CentroCostos,y=datos_[,input$var2],# data = datos_,
@@ -842,7 +855,14 @@ server <- function(input, output, session) {
       layout(title=paste('Gráfico de box-plot de ',input$var2, ' por Centro de Costos \n' ,texto_add,sep=''),
              yaxis=list(title="Frecuencia"))
     
-  })
+    }
+    else{
+      ggplot() + 
+        annotate("text", x = 4, y = 25, size=8, label = texto_add) + 
+        theme_void()
+
+    }
+      })
   
 
 }
