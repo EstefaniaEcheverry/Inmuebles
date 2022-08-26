@@ -115,6 +115,9 @@ dashboardPage(
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
                        selectInput(inputId ="varx" ,label= "Seleccione la variable X",
                                    choices =c1 ,selected="Vr.Canon")),
+      conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation' " ,
+                       selectInput(inputId ="varxy_" ,label= "Seleccione el tipo de inmueble",
+                                   choices =unique(datos$Tipo_de_Inmueble),multiple = TRUE )),
       conditionalPanel("input.sidebar == 'viz' && input.t2 == 'relation'" ,
                        selectInput(inputId ="vary" ,label= "Seleccione la variable Y",
                                    choices =c1 ,selected="Vr.Administracion")),
@@ -268,7 +271,7 @@ server <- function(input, output, session) {
     }
     else{
       columnas_mostrar<-input$var6
-      print(input)
+
     }
     # Mapa del aréa metropolitana con los inmuebles 
     tmap_mode('view') %>%
@@ -404,20 +407,30 @@ server <- function(input, output, session) {
   ### Bar Charts - State wise trend
   
   #################
-  sum_pesos<-function(vector){
-    total=sum(vector)
+  sum_pesos<-function(vector_){
+    total=sum(vector_)
     paste('$' ,formatC(total,big.mark = '.',decimal.mark=',',format='fg'))
+  }
+  var_condicion<-function(vector_,vector_condicion,condicion){
+    vector_resultado<-rep(0,length(vector_))
+    filtro=vector_condicion==condicion
+    vector_resultado[filtro]<-vector_[filtro]
+    return(vector_resultado)
   }
 
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc <- datos %>% group_by(CentroCostos) %>%
+    dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
+                  Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
     summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
               N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
-              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"))  %>%  
+              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"),
+              Vr.canon_c=sum_pesos(Vr.canon_c),
+              Vr.canon_v=sum_pesos(Vr.canon_v))  %>%  
     dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))%>%
-    dplyr::mutate(Var=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda: ',
-                            N_Vivienda,'.\n Comercial: ',N_Comercial,
-                            '.\n Porcentaje: ',Porcentaje,'.',sep=''),
+    dplyr::mutate(General=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda: \n Frec: ',
+                            N_Vivienda,'. \n Total canon: ',Vr.canon_v,'.\n Comercial: \n Frec: ',N_Comercial,
+                            '. \n Total canon: ',Vr.canon_c,'.\n Porcentaje: ',Porcentaje,'.',sep=''),
                   Var_prop=paste("   ",Total.c," ", "", "\n",Porcentaje,"%"))
  
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
@@ -431,7 +444,7 @@ server <- function(input, output, session) {
   
       # Gráfica de Centro total de Costos
       p4 <- tabla_centroc %>% ggplot(aes(x=CentroCostos, y =Total.c, 
-                                         fill=(CentroCostos),label=Var )) +
+                                         fill=(CentroCostos),label=General )) +
     
         geom_bar(width = 0.9, stat="identity")+  
         
@@ -489,14 +502,19 @@ server <- function(input, output, session) {
  
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad <- datos %>% group_by(Ciudad) %>%
-    summarise(Total.ciudad=n(),Vr.Canon=sum_pesos(Vr.Canon),
-    N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
-    N_Comercial = sum(Tipo_de_Inmueble=="Comercial"))  %>%  
-  dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1))%>%
-  dplyr::mutate(Var=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda: ',
-                          N_Vivienda,'.\n Comercial: ',N_Comercial,
-                          '.\n Porcentaje: ',Porcentaje,'.',sep=''),
-                Var_prop=paste("   ",Total.ciudad," ", "", "\n",Porcentaje,"%"))
+    dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
+                  Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
+    summarise(Total.ciudad=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
+              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"),
+              Vr.canon_c=sum_pesos(Vr.canon_c),
+              Vr.canon_v=sum_pesos(Vr.canon_v))  %>%  
+    dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1))%>%
+    dplyr::mutate(General=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda: \n Frec: ',
+                                N_Vivienda,'. \n Total canon: ',Vr.canon_v,'.\n Comercial: \n Frec: ',N_Comercial,
+                                '. \n Total canon: ',Vr.canon_c,'.\n Porcentaje: ',Porcentaje,'.',sep=''),
+                  Var_prop=paste("   ",Total.ciudad," ", "", "\n",Porcentaje,"%"))
+  
   
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad1 <- datos_b %>% group_by(Ciudad) %>%
@@ -509,7 +527,7 @@ server <- function(input, output, session) {
     
       # Gráfica de Centro total de Costos
       p5 <- tabla_ciudad %>% ggplot(aes(x=Ciudad, y = Total.ciudad, fill=Ciudad,
-                                        label=Var)) + 
+                                        label=General)) + 
         geom_bar( stat="identity"              
         )+  
         
@@ -544,7 +562,7 @@ server <- function(input, output, session) {
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
                                                         "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr","Bogota")) +                                            
         
-        geom_text(aes(label=paste0(Total.ciudad," ", "", "\n", Porcentaje, "%")),  
+        geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
                   color="black",                     
                   hjust=0.5,                         
@@ -562,14 +580,18 @@ server <- function(input, output, session) {
   ####################
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_aseg <- datos %>% group_by(Aseguradora) %>%
-    summarise(Total.aseg=n(),Vr.Canon=sum_pesos(Vr.Canon),
-    N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
-    N_Comercial = sum(Tipo_de_Inmueble=="Comercial"))  %>%  
+    dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
+                  Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
+    summarise(Total.aseg=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
+              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"),
+              Vr.canon_c=sum_pesos(Vr.canon_c),
+              Vr.canon_v=sum_pesos(Vr.canon_v))  %>%  
     dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1))%>%
-    dplyr::mutate(Var=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda: ',
-                          N_Vivienda,'.\n Comercial: ',N_Comercial,
-                          '.\n Porcentaje: ',Porcentaje,'.',sep=''),
-                Var_prop=paste("   ",Total.aseg," ", "", "\n",Porcentaje,"%"))
+    dplyr::mutate(General=paste('\n Total canon: ',Vr.Canon,'.\n Vivienda: \n Frec: ',
+                                N_Vivienda,'. \n Total canon: ',Vr.canon_v,'.\n Comercial: \n Frec: ',N_Comercial,
+                                '. \n Total canon: ',Vr.canon_c,'.\n Porcentaje: ',Porcentaje,'%.',sep=''),
+                  Var_prop=paste("   ",Total.aseg," ", "", "\n",Porcentaje,"%"))
   
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_aseg1 <- datos_b %>% group_by(Aseguradora) %>%
@@ -583,7 +605,7 @@ server <- function(input, output, session) {
     
       
       # Gráfica de Aseguradora
-      p8 <- tabla_aseg %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora ,label=Var)) + 
+      p8 <- tabla_aseg %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora ,label=General)) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
         ylim(c(0,5000))+
         labs(x="Aseguradoras", y= "Frecuencia",title= "Diagrama de barras para la variable Aseguradora") +   
@@ -787,8 +809,13 @@ server <- function(input, output, session) {
   output$scatter <- renderPlotly({
     
     #Creating scatter plot for relationship using ggplot
-    
-    sc <- datos %>%
+    if (is.null(input$varxy_) ){
+      datos_plot<-datos
+    }
+    else{
+      datos_plot<-datos[is.element(datos$Tipo_de_Inmueble,input$varxy_),]
+    }
+    sc <- datos_plot %>%
       ggplot(aes(x=get(input$varx), y =get(input$vary), label= IdInmueble)) +
       geom_point(aes(colour = (CentroCostos))) +
       labs(title = paste("Diagrama de dispersión entre", input$varx, "y", input$vary),
