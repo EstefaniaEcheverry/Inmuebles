@@ -166,7 +166,8 @@ dashboardPage(
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
                                        tags$div(align="center", box(tableOutput("low6"), title = textOutput("head2") ,
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
-                              withSpinner(plotlyOutput("barcc"))),
+                              withSpinner(plotlyOutput("barcc")),
+                              DT::dataTableOutput('canon_general')),
                      tabPanel(title="Ciudad",icon = icon("city"), value="trendsc",
                               fluidRow(tags$div(align="center", box(tableOutput("top5.1"), title = textOutput("head3"),
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
@@ -439,7 +440,8 @@ server <- function(input, output, session) {
   }
 
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
-  tabla_centroc <- datos %>% group_by(CentroCostos) %>%
+  tabla_centroc <- datos %>% 
+    group_by(CentroCostos) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
                   Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
     summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
@@ -452,7 +454,23 @@ server <- function(input, output, session) {
                             N_Vivienda,'. \n Canon Vivienda: ',Vr.canon_v,'.\n Comercial: \n Frec: ',N_Comercial,
                             '. \n Canon Comercial: ',Vr.canon_c,'.\n Porcentaje: ',Porcentaje,'.',sep=''),
                   Var_prop=paste("   ",Total.c," ", "", "\n",Porcentaje,"%"))
- 
+
+  ##################################################
+  # Activos general por tipo de inmueble
+    tabla_centroc_general <- datos %>% 
+    dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
+                  Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
+    summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
+              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"),
+              Vr.canon_c=sum_pesos(Vr.canon_c),
+              Vr.canon_v=sum_pesos(Vr.canon_v)) 
+    tabla_centro_general<-data.frame(Discriminado=c('Vivienda:', '', 'Comercial', '', 'Total:',''),
+                                     Medida=rep(c('Frecuencia:','Valor Canon:'),3),
+                                     Valor= c(tabla_centroc_general$N_Vivienda,tabla_centroc_general$Vr.canon_v,
+                                              tabla_centroc_general$N_Comercial , tabla_centroc_general$Vr.canon_c ,
+                                              tabla_centroc_general$Total.c , tabla_centroc_general$Vr.Canon ) )
+  ############################################
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc1 <- datos_b %>% group_by(CentroCostos) %>%
     summarise(Total.c=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
@@ -469,7 +487,7 @@ server <- function(input, output, session) {
         geom_bar(width = 0.9, stat="identity")+  
         
         ylim(c(0,1100))+
-        labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
+          labs(x="Centros de costos" , y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
         geom_text(aes(label=Var_prop),  
@@ -519,7 +537,12 @@ server <- function(input, output, session) {
     
   })
   #############
- 
+ output$canon_general<-DT::renderDataTable(
+   if (input$var7=='Activos'){
+   tabla_centro_general
+   }
+     )
+  
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad <- datos %>% group_by(Ciudad) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
