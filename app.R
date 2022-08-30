@@ -49,6 +49,7 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
 "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
 "Direcciones_c")
 datos_completos<-read.csv('data_orden/inmuebles.csv')
+
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 #Crear el objeto de base de datos 
