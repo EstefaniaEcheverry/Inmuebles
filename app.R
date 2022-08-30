@@ -1,4 +1,4 @@
-#Cargue las librerias necesarias
+#Cargue las librerias necesaria
 library(DT)
 library(gt)
 library(sf)
@@ -27,11 +27,59 @@ library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
 
+
+
+# Agrupación por direcciones 
+conct_catacter<- function(caracteres ){
+  caracteres<- unique(caracteres)
+  caracteres_<-caracteres[1]  
+  if (length(caracteres)>1 ){
+    
+    for (i in caracteres[2:length(caracteres)] ){
+      caracteres_<-paste(caracteres_,i,sep="," )
+    }
+  }
+  return(caracteres_)
+}
+nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"         ,   "NoCCostos"    ,
+"CentroCostos"     ,      "Ciudad"      ,          "Direccion"          ,    "palabras_apa",           "Lugar"    ,             
+"localizaciones.address" ,"localizaciones.lat" ,    "localizaciones.long" ,  
+"Vr.Canon"          ,     "Vr.Administracion" ,     "Valor.Iva"    ,         
+"Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
+"A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
+"Direcciones_c")
+datos_completos<-read.csv('data_orden/inmuebles.csv')
+datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
+datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 #Crear el objeto de base de datos 
-  datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
-datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
-direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
-direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
+#datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
+#names(datos)
+#datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
+#direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
+#direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
+direccion_unique <- datos %>%
+  group_by(Direcciones_c) %>%
+  summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
+             Centro_de_Costos = conct_catacter(CentroCostos),
+             Ciudad = conct_catacter(Ciudad),
+             Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
+             Valor.prom = mean(Vr.Canon),
+             Valor.promad = mean(Vr.Administracion),
+             Latitud = mean(localizaciones.lat),
+             Longitud = mean(localizaciones.long)) # cuenta la cantidad de filas que hay por esa agrupación
+
+direccion_unique_b <- datos_b %>%
+  group_by(Direcciones_c) %>%
+  summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
+             Centro_de_Costos = conct_catacter(CentroCostos),
+             Ciudad = conct_catacter(Ciudad),
+             Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
+             Valor.prom = mean(Vr.Canon),
+             Valor.promad = mean(Vr.Administracion),
+Latitud = mean(localizaciones.lat),
+             Longitud = mean(localizaciones.long)) # cuenta la cantidad de filas que hay por esa agrupación
+
+
 
 # Cambiar las variables a factores
 datos$IdInmueble <- as.character(datos$IdInmueble)
@@ -142,10 +190,10 @@ dashboardPage(
                        column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                               align = "center"),
                        column(width = 4, tags$br() ,
-                              tags$p("Son 5483 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 24 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5459 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1056 de estos inmuebles y Laureles 871 
+                              tags$p(" Son 5527 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 8 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5519 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1060 de estos inmuebles y Laureles 869 
                                      inmuebles. ")
                        )
                      )
@@ -166,7 +214,8 @@ dashboardPage(
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
                                        tags$div(align="center", box(tableOutput("low6"), title = textOutput("head2") ,
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
-                              withSpinner(plotlyOutput("barcc"))),
+                              withSpinner(plotlyOutput("barcc")),
+                              DT::dataTableOutput('canon_general')),
                      tabPanel(title="Ciudad",icon = icon("city"), value="trendsc",
                               fluidRow(tags$div(align="center", box(tableOutput("top5.1"), title = textOutput("head3"),
                                                                     collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE)),
@@ -292,12 +341,15 @@ server <- function(input, output, session) {
   })  
   
   output$data_filtro<- DT::renderDataTable({
+  
    if ( sum(names(input) == 'map_plot_marker_click')==1 ){
-
+  
     click<-input$map_plot_marker_click
+    print(paste('X',direccion_unique$indice,sep=""))
+    print(click$id)
     direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
                                       'Direcciones_c']
-    datos_print<- datos[datos$Direcciones_c==direccion_print,]  
+    datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
     datos_print
    }
     else{
@@ -334,7 +386,7 @@ server <- function(input, output, session) {
       click<-input$map_plot_b_marker_click
       direccion_print<-direccion_unique_b[paste('X',direccion_unique$indice,sep="")==click$id ,
                                         'Direcciones_c']
-      datos_print<- datos_b[datos_b$Direcciones_c==direccion_print,]  
+      datos_print<- datos_b[datos_b$Direcciones_c==direccion_print$Direcciones_c,]  
       datos_print
     }
     else{
@@ -439,7 +491,8 @@ server <- function(input, output, session) {
   }
 
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
-  tabla_centroc <- datos %>% group_by(CentroCostos) %>%
+  tabla_centroc <- datos %>% 
+    group_by(CentroCostos) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
                   Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
     summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
@@ -452,7 +505,23 @@ server <- function(input, output, session) {
                             N_Vivienda,'. \n Canon Vivienda: ',Vr.canon_v,'.\n Comercial: \n Frec: ',N_Comercial,
                             '. \n Canon Comercial: ',Vr.canon_c,'.\n Porcentaje: ',Porcentaje,'.',sep=''),
                   Var_prop=paste("   ",Total.c," ", "", "\n",Porcentaje,"%"))
- 
+
+  ##################################################
+  # Activos general por tipo de inmueble
+    tabla_centroc_general <- datos %>% 
+    dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
+                  Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
+    summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
+              N_Comercial = sum(Tipo_de_Inmueble=="Comercial"),
+              Vr.canon_c=sum_pesos(Vr.canon_c),
+              Vr.canon_v=sum_pesos(Vr.canon_v)) 
+    tabla_centro_general<-data.frame(Discriminado=c('Vivienda:', '', 'Comercial', '', 'Total:',''),
+                                     Medida=rep(c('Frecuencia:','Valor Canon:'),3),
+                                     Valor= c(tabla_centroc_general$N_Vivienda,tabla_centroc_general$Vr.canon_v,
+                                              tabla_centroc_general$N_Comercial , tabla_centroc_general$Vr.canon_c ,
+                                              tabla_centroc_general$Total.c , tabla_centroc_general$Vr.Canon ) )
+  ############################################
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc1 <- datos_b %>% group_by(CentroCostos) %>%
     summarise(Total.c=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
@@ -469,7 +538,7 @@ server <- function(input, output, session) {
         geom_bar(width = 0.9, stat="identity")+  
         
         ylim(c(0,1100))+
-        labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
+          labs(x="Centros de costos" , y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
         geom_text(aes(label=Var_prop),  
@@ -519,7 +588,12 @@ server <- function(input, output, session) {
     
   })
   #############
- 
+ output$canon_general<-DT::renderDataTable(
+   if (input$var7=='Activos'){
+   tabla_centro_general
+   }
+     )
+  
   # Tabla total de cada ciudad y porcentajes por Aseguradora
   tabla_ciudad <- datos %>% group_by(Ciudad) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
@@ -888,4 +962,6 @@ server <- function(input, output, session) {
 
 #Definición de la aplicación
 shinyApp(ui = ui, server = server)
+
+
 
