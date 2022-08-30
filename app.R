@@ -190,10 +190,10 @@ dashboardPage(
                        column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                               align = "center"),
                        column(width = 4, tags$br() ,
-                              tags$p("Son 5483 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 24 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5459 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1056 de estos inmuebles y Laureles 871 
+                              tags$p(" Son 5527 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 8 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5519 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1060 de estos inmuebles y Laureles 869 
                                      inmuebles. ")
                        )
                      )
