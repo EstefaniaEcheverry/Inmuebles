@@ -27,11 +27,59 @@ library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
 
+
+
+# Agrupación por direcciones 
+conct_catacter<- function(caracteres ){
+  caracteres<- unique(caracteres)
+  caracteres_<-caracteres[1]  
+  if (length(caracteres)>1 ){
+    
+    for (i in caracteres[2:length(caracteres)] ){
+      caracteres_<-paste(caracteres_,i,sep="," )
+    }
+  }
+  return(caracteres_)
+}
+nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"         ,   "NoCCostos"    ,
+"CentroCostos"     ,      "Ciudad"      ,          "Direccion"          ,    "palabras_apa",           "Lugar"    ,             
+"localizaciones.address" ,"localizaciones.lat" ,    "localizaciones.long" ,  
+"Vr.Canon"          ,     "Vr.Administracion" ,     "Valor.Iva"    ,         
+"Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
+"A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
+"Direcciones_c")
+datos_completos<-read.csv('data_orden/inmuebles.csv')
+datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
+datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 #Crear el objeto de base de datos 
-datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
-datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
-direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
-direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
+#datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
+#names(datos)
+#datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
+#direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
+#direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
+direccion_unique <- datos %>%
+  group_by(Direcciones_c) %>%
+  summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
+             Centro_de_Costos = conct_catacter(CentroCostos),
+             Ciudad = conct_catacter(Ciudad),
+             Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
+             Valor.prom = mean(Vr.Canon),
+             Valor.promad = mean(Vr.Administracion),
+             Latitud = mean(localizaciones.lat),
+             Longitud = mean(localizaciones.long)) # cuenta la cantidad de filas que hay por esa agrupación
+
+direccion_unique_b <- datos_b %>%
+  group_by(Direcciones_c) %>%
+  summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
+             Centro_de_Costos = conct_catacter(CentroCostos),
+             Ciudad = conct_catacter(Ciudad),
+             Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
+             Valor.prom = mean(Vr.Canon),
+             Valor.promad = mean(Vr.Administracion),
+Latitud = mean(localizaciones.lat),
+             Longitud = mean(localizaciones.long)) # cuenta la cantidad de filas que hay por esa agrupación
+
+
 
 # Cambiar las variables a factores
 datos$IdInmueble <- as.character(datos$IdInmueble)
@@ -293,12 +341,15 @@ server <- function(input, output, session) {
   })  
   
   output$data_filtro<- DT::renderDataTable({
+  
    if ( sum(names(input) == 'map_plot_marker_click')==1 ){
-
+  
     click<-input$map_plot_marker_click
+    print(paste('X',direccion_unique$indice,sep=""))
+    print(click$id)
     direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
                                       'Direcciones_c']
-    datos_print<- datos[datos$Direcciones_c==direccion_print,]  
+    datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
     datos_print
    }
     else{
@@ -335,7 +386,7 @@ server <- function(input, output, session) {
       click<-input$map_plot_b_marker_click
       direccion_print<-direccion_unique_b[paste('X',direccion_unique$indice,sep="")==click$id ,
                                         'Direcciones_c']
-      datos_print<- datos_b[datos_b$Direcciones_c==direccion_print,]  
+      datos_print<- datos_b[datos_b$Direcciones_c==direccion_print$Direcciones_c,]  
       datos_print
     }
     else{
