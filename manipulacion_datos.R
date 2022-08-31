@@ -153,8 +153,10 @@ for (direccion in inmuebles$Direccion){
 
 ##################### geo codificacion ###############################3
 
-datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
-datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
+datos <- read.csv2("data/direccion_actn.csv", header= TRUE,
+                   fileEncoding = "UTF-8")
+datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE,
+                   fileEncoding = "UTF-8")
 
 localizaciones <- unique(read.csv("data/localizaciones_n.csv",sep=",",header=T))
 id_inmuebles<-c(datos$IdInmueble,datos_b$IdInmueble)  
@@ -163,7 +165,7 @@ filtro<-(!is.element( inmuebles$IdInmueble,id_inmuebles ) &
 inmuebles$Direcciones_c <- Direcciones_c
 direcciones_nuevas<-paste (Direcciones_c,inmuebles$Ciudad, ', Colombia',sep=' ' )
 direcciones_nuevas<-data.frame(address=(direcciones_nuevas[filtro]), id=inmuebles$IdInmueble[filtro])
-localizaciones_nuevas<-geocode(direcciones_nuevas$address, method = "arcgis" )
+localizaciones_nuevas<-geocode(direcciones_nuevas,"address", method = "arcgis" )
 
 
 write.csv(x = rbind(unique(localizaciones_nuevas[,c(1,3,4)]),localizaciones), file = "data_orden/localizaciones.csv", row.names = F)
@@ -199,5 +201,6 @@ for (i in inmuebles$IdInmueble[filtro_]){
 }
 
 
-write.csv(x = inmuebles, file = "data_orden/inmuebles.csv", row.names = F)
+write.csv2(x = inmuebles, file = "data_orden/inmuebles.csv", row.names = F,
+           fileEncoding = "UTF-8")
 
