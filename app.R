@@ -52,6 +52,7 @@ datos_completos<-read.csv2("data_orden/inmuebles.csv",sep=";", header =TRUE)
 
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
+
 #Crear el objeto de base de datos 
 #datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
 #names(datos)
