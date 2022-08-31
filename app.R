@@ -48,7 +48,8 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
 "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
 "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
 "Direcciones_c")
-datos_completos<-read.csv('data_orden/inmuebles.csv')
+datos_completos<-read.csv2("data_orden/inmuebles.csv",sep=";", header =TRUE)
+
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 #Crear el objeto de base de datos 
@@ -355,7 +356,19 @@ server <- function(input, output, session) {
     else{
       datos
     }
-  }, options = list(scrollX = TRUE) )
+  }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                                                    initComplete = JS(
+                                                      "function(settings, json) {",
+                                                      "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                                                      "}"),
+                                                    columnDefs=list(list(className='dt-center',targets="_all"))
+  ),
+  filter = "top",
+  selection = 'multiple',
+  style = 'bootstrap',
+  class = 'cell-border stripe',
+  rownames = FALSE )
+  
   direcciones_sf_b <- direccion_unique_b %>% 
     st_as_sf(coords = c('Longitud', 'Latitud')) %>%
     st_set_crs(value = 4326) %>%
@@ -429,9 +442,18 @@ server <- function(input, output, session) {
       datos_b
       
     }}
-    , options = list(scrollX = TRUE) 
-    
-  ))
+    , options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                     initComplete = JS(
+                       "function(settings, json) {",
+                       "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                       "}"),
+                     columnDefs=list(list(className='dt-center',targets="_all"))
+    ),
+    filter = "top",
+    selection = 'multiple',
+    style = 'bootstrap',
+    class = 'cell-border stripe',
+    rownames = FALSE ))
   # DataTable
   output$dataInmu <- renderDataTable(
     direccion_unique
@@ -962,6 +984,3 @@ server <- function(input, output, session) {
 
 #Definición de la aplicación
 shinyApp(ui = ui, server = server)
-
-
-
