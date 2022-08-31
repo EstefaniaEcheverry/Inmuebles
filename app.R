@@ -191,10 +191,10 @@ dashboardPage(
                        column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                               align = "center"),
                        column(width = 4, tags$br() ,
-                              tags$p("Son 5483 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 24 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5459 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1056 de estos inmuebles y Laureles 871 
+                              tags$p(" Son 5527 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 8 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5519 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1060 de estos inmuebles y Laureles 869 
                                      inmuebles. ")
                        )
                      )
@@ -356,7 +356,18 @@ server <- function(input, output, session) {
     else{
       datos
     }
-  }, options = list(scrollX = TRUE) )
+  }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                                                    initComplete = JS(
+                                                      "function(settings, json) {",
+                                                      "$(this.api().table().header()).css({'background-color': '#6600FF', 'color': '1c1b1b'});",
+                                                      "}"),
+                                                    columnDefs=list(list(className='dt-center',targets="_all"))
+  ),
+  filter = "top",
+  selection = 'multiple',
+  style = 'bootstrap',
+  class = 'cell-border stripe',
+  rownames = FALSE )
   direcciones_sf_b <- direccion_unique_b %>% 
     st_as_sf(coords = c('Longitud', 'Latitud')) %>%
     st_set_crs(value = 4326) %>%
