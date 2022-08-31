@@ -263,9 +263,8 @@ ui <- fluidPage(
                                                    withSpinner(tmapOutput(outputId = "map_plot_b"))),
                                           fluidRow(
                                             ( DT::dataTableOutput('data_filtro_b')) )
-                                )
-                                
-                       ))
+                                ))
+                       )
         )
       )
     )
@@ -398,19 +397,33 @@ server <- function(input, output, session) {
     if ( sum(names(input) == 'map_plot_b_marker_click')==1 ){
       
       click<-input$map_plot_b_marker_click
-      direccion_print<-direccion_unique_b[paste('X',direccion_unique$indice,sep="")==click$id ,
+      print(paste('X',direccion_unique_b$indice,sep=""))
+      print(click$id)
+      direccion_print_b<-direccion_unique_b[paste('X',direccion_unique_b$indice,sep="")==click$id ,
                                           'Direcciones_c']
-      datos_print<- datos_b[datos_b$Direcciones_c==direccion_print$Direcciones_c,]  
-      datos_print
+      datos_print_b<- datos_b[datos_b$Direcciones_c==direccion_print_b$Direcciones_c,]  
+      datos_print_b
     }
+    
     else{
       datos_b
     }
-  }, options = list(scrollX = TRUE) )
+  }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                    initComplete = JS(
+                      "function(settings, json) {",
+                      "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                      "}"),
+                    columnDefs=list(list(className='dt-center',targets="_all"))
+  ),
+  filter = "top",
+  selection = 'multiple',
+  style = 'bootstrap',
+  class = 'cell-border stripe',
+  rownames = FALSE )
+  
+  
   # reactive values for map
-  
-  
-  
+
   
   output$structure <- renderPrint(
     if (input$var0=='Activos'){
@@ -533,17 +546,33 @@ server <- function(input, output, session) {
   # Activos general por tipo de inmueble
   tabla_centroc_general <- datos %>% 
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
-                  Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda')) %>%
+                  Vr.canon_v=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Vivienda'),
+                  Vr.Administracion_c=var_condicion(Vr.Administracion,Tipo_de_Inmueble,'Comercial'),
+                  Vr.Administracion_v=var_condicion(Vr.Administracion,Tipo_de_Inmueble,'Vivienda'),
+                  Valor.Iva_c=var_condicion(Valor.Iva,Tipo_de_Inmueble,'Comercial'),
+                  Valor.Iva_v=var_condicion(Valor.Iva,Tipo_de_Inmueble,'Vivienda')) %>%
     summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              Vr.Administracion=sum_pesos(Vr.Administracion),
+              Valor.Iva =sum_pesos(Valor.Iva),
               N_Vivienda = sum(Tipo_de_Inmueble=="Vivienda"),
               N_Comercial = sum(Tipo_de_Inmueble=="Comercial"),
               Vr.canon_c=sum_pesos(Vr.canon_c),
-              Vr.canon_v=sum_pesos(Vr.canon_v)) 
-  tabla_centro_general<-data.frame(Discriminado=c('Vivienda:', '', 'Comercial', '', 'Total:',''),
-                                   Medida=rep(c('Frecuencia:','Valor Canon:'),3),
+              Vr.canon_v=sum_pesos(Vr.canon_v),
+              Vr.Administracion_c=sum_pesos(Vr.Administracion_c),
+              Vr.Administracion_v=sum_pesos(Vr.Administracion_v),
+              Valor.Iva_c=sum_pesos(Valor.Iva_c))
+  tabla_centro_general<-data.frame(Discriminado=c('Vivienda:', '','', 'Comercial:', '','','', 'Total:','','',''),
+                                   Medida=c(c('Frecuencia:','Valor Canon:','Valor Administracion:'),
+                                            rep(c('Frecuencia:','Valor Canon:','Valor Administracion:', 'Valor Iva:'),2)),
                                    Valor= c(tabla_centroc_general$N_Vivienda,tabla_centroc_general$Vr.canon_v,
+                                            tabla_centroc_general$Vr.Administracion_v,
+                                            #tabla_centroc_general$Valor.Iva_v,
                                             tabla_centroc_general$N_Comercial , tabla_centroc_general$Vr.canon_c ,
-                                            tabla_centroc_general$Total.c , tabla_centroc_general$Vr.Canon ) )
+                                            tabla_centroc_general$Vr.Administracion_c,
+                                            tabla_centroc_general$Valor.Iva_c,
+                                            tabla_centroc_general$Total.c , tabla_centroc_general$Vr.Canon,
+                                            tabla_centroc_general$Vr.Administracion,
+                                            tabla_centroc_general$Valor.Iva) )
   ############################################
   # Tabla total de cada ciudad y porcentajes por Centro de Costos
   tabla_centroc1 <- datos_b %>% group_by(CentroCostos) %>%
