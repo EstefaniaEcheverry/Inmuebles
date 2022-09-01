@@ -48,8 +48,10 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
              "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
              "Direcciones_c")
-datos_completos<-read.csv2("data_orden/inmuebles.csv",sep=";", header =TRUE)
-
+datos_completo<-read.csv2("data_orden/inmuebles_n.csv",sep=";", header =TRUE)
+filtro<-datos_completo$Admon..Inc.=='True'
+datos_completo[filtro,'Vr.Canon'] <- datos_completo[filtro,'Vr.Canon']-datos_completo[filtro,'Vr.Administracion']
+datos_completos <- datos_completos
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 
@@ -192,10 +194,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5527 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 8 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5519 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1060 de estos inmuebles y Laureles 869 
+                                tags$p(" Son 5562 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 95 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5467 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1047 de estos inmuebles y Laureles 865 
                                      inmuebles. ")
                          )
                        )
@@ -526,7 +528,7 @@ server <- function(input, output, session) {
     return(vector_resultado)
   }
   
-  # Tabla total de cada ciudad y porcentajes por Centro de Costos
+  # Tabla de los Centros de costos Vivienda y Comercial (Acitvos)
   tabla_centroc <- datos %>% 
     group_by(CentroCostos) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
@@ -574,16 +576,26 @@ server <- function(input, output, session) {
                                             tabla_centroc_general$Vr.Administracion,
                                             tabla_centroc_general$Valor.Iva) )
   ############################################
-  # Tabla total de cada ciudad y porcentajes por Centro de Costos
+  # Tabla de los Centros de costos Vivienda y Comercial (Bloqueados)
   tabla_centroc1 <- datos_b %>% group_by(CentroCostos) %>%
     summarise(Total.c=n(),Vr.Canon=sum_pesos(Vr.Canon))  %>%  
     dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))
   
+  # Bloqueados general por tipo de inmueble
+  tabla_centroc_general_b <- datos_b %>% 
+    summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
+              Vr.Administracion=sum_pesos(Vr.Administracion))
+  tabla_centro_general_b<-data.frame(Discriminado=c('Total:','',''),
+                                   Medida=c('Frecuencia:','Valor Canon:','Valor Administracion:'),
+                                   Valor= c(
+                                            tabla_centroc_general_b$Total.c , tabla_centroc_general_b$Vr.Canon,
+                                            tabla_centroc_general_b$Vr.Administracion) )
+  ############################################
+  
   # Barplot de Frecuencia de la variable Centro de Costos
   output$barcc <- renderPlotly({
     if (input$var7=='Activos'){
-      
-      # Gráfica de Centro total de Costos
+ # Gráfica de Centro total de Costos
       p4 <- tabla_centroc %>% ggplot(aes(x=CentroCostos, y =Total.c, 
                                          fill=(CentroCostos),label=General )) +
         
@@ -616,7 +628,7 @@ server <- function(input, output, session) {
                                           fill=CentroCostos,label=Vr.Canon )) +
         geom_bar(width = 0.9, stat="identity")+  
         
-        ylim(c(0,6))+
+        ylim(c(0,22))+
         labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
@@ -643,6 +655,9 @@ server <- function(input, output, session) {
   output$canon_general<-DT::renderDataTable(
     if (input$var7=='Activos'){
       tabla_centro_general
+    }
+    else{
+      tabla_centro_general_b
     }
   )
   
@@ -703,7 +718,7 @@ server <- function(input, output, session) {
         geom_bar( stat="identity"              
         )+  
         
-        ylim(c(0,18))+
+        ylim(c(0,55))+
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
@@ -777,7 +792,7 @@ server <- function(input, output, session) {
       # Gráfica de Aseguradora
       p9 <- tabla_aseg1 %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora,label=Vr.Canon )) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
-        ylim(c(0,20))+
+        ylim(c(0,80))+
         labs(x="Aseguradoras", y= "Frecuencia",title= "Diagrama de barras para la variable Aseguradora") +   
         labs(fill = "")+                                         
         
