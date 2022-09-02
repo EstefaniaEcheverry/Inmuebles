@@ -145,7 +145,8 @@ inmuebles$Lugar <- palabras_apa
 ############################
 
 # Eliminar las palabras de las direcciones para las localizaciones
-palabras_no <- c ("CONJUNTO", "AP","CA", "ET", "INT", "ED", "URBANIZACION", "PRIMER", "CASA","LO","CS","PISO")
+palabras_no <- c ("CONJUNTO", "AP","CA", "ET", "INT", "ED", "URBANIZACION",
+                  "PRIMER", "CASA","LO","CS","PISO", "IN")
 Direcciones_c<-c()
 for (direccion in inmuebles$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,palabras_no)[1])

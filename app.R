@@ -131,7 +131,7 @@ ui <- fluidPage(
     skin = "blue",
     title = "Inmuebles de Portada Inmobiliaria",
     dashboardHeader(title=span(img(src = "logo Portada.png", height = 35), "Inmuebles de Portada Inmobiliaria"),
-                    titleWidth = 400, 
+                    titleWidth = 800, 
                     tags$li(class="dropdown",tags$a(href="https://portadainmobiliaria.com/", icon("building"), "Portada", target="_blank")),
                     tags$li(class="dropdown",tags$a(href="https://www.linkedin.com/in/estefania-echeverry-franco-932597232/" ,icon("linkedin"), "My Profile", target="_blank")),
                     tags$li(class="dropdown",tags$a(href="https://github.com/EstefaniaEcheverry/Inmuebles", icon("github"), "Source Code", target="_blank"))
