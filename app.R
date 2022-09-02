@@ -48,10 +48,10 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
              "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
              "Direcciones_c")
-datos_completo<-read.csv2("data_orden/inmuebles_n.csv",sep=";", header =TRUE)
-filtro<-datos_completo$Admon..Inc.=='True'
-datos_completo[filtro,'Vr.Canon'] <- datos_completo[filtro,'Vr.Canon']-datos_completo[filtro,'Vr.Administracion']
-datos_completos <- datos_completos
+datos_completos<-read.csv2("data_orden/inmuebles_2.csv",sep=";", header =TRUE)
+filtro<-datos_completos$Admon..Inc.=='True'
+datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
+
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 
@@ -194,10 +194,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5562 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 95 de estos inmuebles estan bloqueados o desactivados,
+                                tags$p(" Son 5572 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 91 de estos inmuebles estan bloqueados o desactivados,
                                      es decir, existen 5467 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1047 de estos inmuebles y Laureles 865 
+                                     de costos; Los Colores maneja 1049 de estos inmuebles y Laureles 868 
                                      inmuebles. ")
                          )
                        )
