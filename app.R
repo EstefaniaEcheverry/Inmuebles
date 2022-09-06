@@ -48,7 +48,7 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
              "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
              "Direcciones_c")
-datos_completos<-read.csv2("data_orden/inmuebles_2.csv",sep=";", header =TRUE)
+datos_completos<-read.csv2("data_orden/inmuebles_3.csv",sep=";", header =TRUE)
 filtro<-datos_completos$Admon..Inc.=='True'
 datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
 
@@ -194,10 +194,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5572 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 91 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5467 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1049 de estos inmuebles y Laureles 868 
+                                tags$p(" Son 5569 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 49 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5520 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1052 de estos inmuebles y Laureles 871 
                                      inmuebles. ")
                          )
                        )
