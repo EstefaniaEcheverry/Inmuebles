@@ -325,7 +325,6 @@ server <- function(input, output, session) {
     st_transform(crs = 3857) %>%
     st_intersection(area_metropolitana)
   
-  
   output$map_plot<- renderTmap({
     if (is.null(input$var5) ){
       direcciones_sf_filtro<-direcciones_sf
