@@ -148,10 +148,10 @@ ui <- fluidPage(
                          selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
                                      choices =c('Activos','Bloqueados'))),  
         conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.2' ",
-                         selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
+                         selectInput(inputId ="var3" ,label= "Seleccione por tipo de inmueble",
                                      choices =c('Activos','Bloqueados'))),  
         conditionalPanel("input.sidebar == 'data'&& input.t1 == 'datos.3' ",
-                         selectInput(inputId ="var0" ,label= "Seleccione por tipo de inmueble",
+                         selectInput(inputId ="var4" ,label= "Seleccione por tipo de inmueble",
                                      choices =c('Activos','Bloqueados'))),  
         menuItem(text= "Visualization",tabName = "viz",icon = icon("chart-line")),
         conditionalPanel("input.sidebar == 'viz' && input.t2 == 'trendscc'",
@@ -460,7 +460,7 @@ server <- function(input, output, session) {
   
   
   output$structure <- renderPrint(
-    if (input$var0=='Activos'){
+    if (input$var3=='Activos'){
       datos %>% str()
       
     }
@@ -473,7 +473,7 @@ server <- function(input, output, session) {
   # Summary 
   output$summary <- renderPrint(
     # Resumen de los datos 
-    if (input$var0=='Activos'){
+    if (input$var4=='Activos'){
       datos %>% summary()
     }
     else{
