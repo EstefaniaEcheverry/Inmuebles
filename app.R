@@ -194,9 +194,9 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5569 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 49 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5520 inmuebles activos distribuidos por los centros 
+                                tags$p(" Son 5571 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 50 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5521 inmuebles activos distribuidos por los centros 
                                      de costos; Los Colores maneja 1052 de estos inmuebles y Laureles 871 
                                      inmuebles. ")
                          )
@@ -255,9 +255,10 @@ ui <- fluidPage(
                                 fluidPage(
                                   fluidRow(
                                     br(),
-                                    (tmapOutput( "map_plot"))),
-                                  actionButton("reset_input", "Datos completos"),
-                                  br(),
+                                    withSpinner(tmapOutput( outputId = "map_plot"))),br(),
+                                  actionButton("reset_input", "Base de Datos", icon("paper-plane"), 
+                                               style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
+                                  br(),br(),
                                   
                                   fluidRow(
                                     ( DT::dataTableOutput('data_filtro')) )
@@ -265,12 +266,14 @@ ui <- fluidPage(
                                 )),
                        tabPanel(title="Bloqueados",
                                 fluidPage(fluidRow(br(),
-                                                   withSpinner(tmapOutput(outputId = "map_plot_b"))),
-                                          actionButton("reset_input_b", "Datos completos"),
+                                                   withSpinner(tmapOutput(outputId = "map_plot_b"))),br(),
+                                          actionButton("reset_input_b", "Base de Datos", icon("paper-plane"), 
+                                                       style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
+                                          br(),br(),
                                           fluidRow(
                                             ( DT::dataTableOutput('data_filtro_b')) )
                                 ))
-                       )
+                )
         )
       )
     )
@@ -345,37 +348,37 @@ server <- function(input, output, session) {
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
     
   })  
-observeEvent(input$map_plot_marker_click,{
-  output$data_filtro<- DT::renderDataTable({
-    click<-input$map_plot_marker_click
-    direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
-                                      'Direcciones_c']
-    datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
-    datos_print    
-  }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
-                    initComplete = JS(
-                      "function(settings, json) {",
-                      "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
-                      "}"),
-                    columnDefs=list(list(className='dt-center',targets="_all"))
-  ),
-  filter = "top",
-  selection = 'multiple',
-  style = 'bootstrap',
-  class = 'cell-border stripe',
-  rownames = FALSE )
-  
-})
+  observeEvent(input$map_plot_marker_click,{
+    output$data_filtro<- DT::renderDataTable({
+      click<-input$map_plot_marker_click
+      direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
+                                        'Direcciones_c']
+      datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
+      datos_print    
+    }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                      initComplete = JS(
+                        "function(settings, json) {",
+                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' });",
+                        "}"),
+                      columnDefs=list(list(className='dt-center',targets="_all"))
+    ),
+    filter = "top",
+    selection = 'multiple',
+    style = 'bootstrap',
+    class = 'cell-border stripe',
+    rownames = FALSE )
+    
+  })
   observeEvent(input$reset_input,{
     output$data_filtro<- DT::renderDataTable({
-    datos
-      }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
-                         initComplete = JS(
-                           "function(settings, json) {",
-                           "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
-                           "}"),
-                         columnDefs=list(list(className='dt-center',targets="_all"))
-      ),
+      datos
+    }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                      initComplete = JS(
+                        "function(settings, json) {",
+                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' });",
+                        "}"),
+                      columnDefs=list(list(className='dt-center',targets="_all"))
+    ),
     filter = "top",
     selection = 'multiple',
     style = 'bootstrap',
@@ -419,7 +422,7 @@ observeEvent(input$map_plot_marker_click,{
     }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
                       initComplete = JS(
                         "function(settings, json) {",
-                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' });",
                         "}"),
                       columnDefs=list(list(className='dt-center',targets="_all"))
     ),
@@ -436,7 +439,7 @@ observeEvent(input$map_plot_marker_click,{
     }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
                       initComplete = JS(
                         "function(settings, json) {",
-                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' });",
                         "}"),
                       columnDefs=list(list(className='dt-center',targets="_all"))
     ),
@@ -451,7 +454,7 @@ observeEvent(input$map_plot_marker_click,{
   
   
   # reactive values for map
-
+  
   
   output$structure <- renderPrint(
     if (input$var0=='Activos'){
@@ -487,7 +490,7 @@ observeEvent(input$map_plot_marker_click,{
       , options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
                        initComplete = JS(
                          "function(settings, json) {",
-                         "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                         "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' });",
                          "}"),
                        columnDefs=list(list(className='dt-center',targets="_all"))
       ),
@@ -612,16 +615,16 @@ observeEvent(input$map_plot_marker_click,{
     summarise(Total.c=n(), Vr.Canon=sum_pesos(Vr.Canon), 
               Vr.Administracion=sum_pesos(Vr.Administracion))
   tabla_centro_general_b<-data.frame(Discriminado=c('Total:','',''),
-                                   Medida=c('Frecuencia:','Valor Canon:','Valor Administracion:'),
-                                   Valor= c(
-                                            tabla_centroc_general_b$Total.c , tabla_centroc_general_b$Vr.Canon,
-                                            tabla_centroc_general_b$Vr.Administracion) )
+                                     Medida=c('Frecuencia:','Valor Canon:','Valor Administracion:'),
+                                     Valor= c(
+                                       tabla_centroc_general_b$Total.c , tabla_centroc_general_b$Vr.Canon,
+                                       tabla_centroc_general_b$Vr.Administracion) )
   ############################################
   
   # Barplot de Frecuencia de la variable Centro de Costos
   output$barcc <- renderPlotly({
     if (input$var7=='Activos'){
- # Gráfica de Centro total de Costos
+      # Gráfica de Centro total de Costos
       p4 <- tabla_centroc %>% ggplot(aes(x=CentroCostos, y =Total.c, 
                                          fill=(CentroCostos),label=General )) +
         
