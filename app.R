@@ -255,7 +255,10 @@ ui <- fluidPage(
                                 fluidPage(
                                   fluidRow(
                                     br(),
-                                    (tmapOutput( "map_plot"))),                                
+                                    (tmapOutput( "map_plot"))),
+                                  actionButton("reset_input", "Datos completos"),
+                                  br(),
+                                  
                                   fluidRow(
                                     ( DT::dataTableOutput('data_filtro')) )
                                   
@@ -263,6 +266,7 @@ ui <- fluidPage(
                        tabPanel(title="Bloqueados",
                                 fluidPage(fluidRow(br(),
                                                    withSpinner(tmapOutput(outputId = "map_plot_b"))),
+                                          actionButton("reset_input_b", "Datos completos"),
                                           fluidRow(
                                             ( DT::dataTableOutput('data_filtro_b')) )
                                 ))
@@ -342,22 +346,13 @@ server <- function(input, output, session) {
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
     
   })  
-  
+observeEvent(input$map_plot_marker_click,{
   output$data_filtro<- DT::renderDataTable({
-    
-    if ( sum(names(input) == 'map_plot_marker_click')==1 ){
-      
-      click<-input$map_plot_marker_click
-      print(paste('X',direccion_unique$indice,sep=""))
-      print(click$id)
-      direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
-                                        'Direcciones_c']
-      datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
-      datos_print
-    }
-    else{
-      datos
-    }
+    click<-input$map_plot_marker_click
+    direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
+                                      'Direcciones_c']
+    datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
+    datos_print    
   }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
                     initComplete = JS(
                       "function(settings, json) {",
@@ -370,6 +365,25 @@ server <- function(input, output, session) {
   style = 'bootstrap',
   class = 'cell-border stripe',
   rownames = FALSE )
+  
+})
+  observeEvent(input$reset_input,{
+    output$data_filtro<- DT::renderDataTable({
+    datos
+      }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                         initComplete = JS(
+                           "function(settings, json) {",
+                           "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                           "}"),
+                         columnDefs=list(list(className='dt-center',targets="_all"))
+      ),
+    filter = "top",
+    selection = 'multiple',
+    style = 'bootstrap',
+    class = 'cell-border stripe',
+    rownames = FALSE)
+  })
+  
   
   direcciones_sf_b <- direccion_unique_b %>% 
     st_as_sf(coords = c('Longitud', 'Latitud')) %>%
@@ -395,33 +409,46 @@ server <- function(input, output, session) {
       tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
   })
-  output$data_filtro_b<- DT::renderDataTable({
-    if ( sum(names(input) == 'map_plot_b_marker_click')==1 ){
-      
+  observeEvent(input$map_plot_b_marker_click,{
+    output$data_filtro_b<- DT::renderDataTable({
       click<-input$map_plot_b_marker_click
-      print(paste('X',direccion_unique_b$indice,sep=""))
-      print(click$id)
+      
       direccion_print_b<-direccion_unique_b[paste('X',direccion_unique_b$indice,sep="")==click$id ,
-                                          'Direcciones_c']
+                                            'Direcciones_c']
       datos_print_b<- datos_b[datos_b$Direcciones_c==direccion_print_b$Direcciones_c,]  
       datos_print_b
-    }
+    }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                      initComplete = JS(
+                        "function(settings, json) {",
+                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                        "}"),
+                      columnDefs=list(list(className='dt-center',targets="_all"))
+    ),
+    filter = "top",
+    selection = 'multiple',
+    style = 'bootstrap',
+    class = 'cell-border stripe',
+    rownames = FALSE )
     
-    else{
+  })
+  observeEvent(input$reset_input_b,{
+    output$data_filtro_b<- DT::renderDataTable({
       datos_b
-    }
-  }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
-                    initComplete = JS(
-                      "function(settings, json) {",
-                      "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
-                      "}"),
-                    columnDefs=list(list(className='dt-center',targets="_all"))
-  ),
-  filter = "top",
-  selection = 'multiple',
-  style = 'bootstrap',
-  class = 'cell-border stripe',
-  rownames = FALSE )
+    }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                      initComplete = JS(
+                        "function(settings, json) {",
+                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '1c1b1b' });",
+                        "}"),
+                      columnDefs=list(list(className='dt-center',targets="_all"))
+    ),
+    filter = "top",
+    selection = 'multiple',
+    style = 'bootstrap',
+    class = 'cell-border stripe',
+    rownames = FALSE)
+  })
+  
+  
   
   
   # reactive values for map
