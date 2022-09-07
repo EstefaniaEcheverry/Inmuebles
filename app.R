@@ -87,11 +87,11 @@ direccion_unique_b <- datos_b %>%
 
 # Cambiar las variables a factores
 datos$IdInmueble <- as.character(datos$IdInmueble)
-# creamos indices
-direccion_unique$indice<- 1:nrow(direccion_unique)
+# creamos Indices
+direccion_unique$Indice<- 1:nrow(direccion_unique)
 col_t<-ncol(direccion_unique)
 direccion_unique<-direccion_unique[,c(col_t,1:col_t-1)]
-direccion_unique_b$indice<- 1:nrow(direccion_unique_b)
+direccion_unique_b$Indice<- 1:nrow(direccion_unique_b)
 col_t<-ncol(direccion_unique_b)
 direccion_unique_b<-direccion_unique_b[,c(col_t,1:col_t-1)]
 datos$NoContrato <- as.character(datos$NoContrato)
@@ -127,6 +127,7 @@ n1<-length(c4)
 c4=c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
+ 
   dashboardPage(
     skin = "blue",
     title = "Inmuebles de Portada Inmobiliaria",
@@ -194,8 +195,8 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5571 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 50 de estos inmuebles estan bloqueados o desactivados,
+                                tags$p(" Son 5573 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 48 de estos inmuebles estan bloqueados o desactivados,
                                      es decir, existen 5521 inmuebles activos distribuidos por los centros 
                                      de costos; Los Colores maneja 1052 de estos inmuebles y Laureles 871 
                                      inmuebles. ")
@@ -204,9 +205,9 @@ ui <- fluidPage(
                        
                        
                        ), 
-                       tabPanel(title="Datos",icon = icon("address-card"),value= "datos.1", DT::dataTableOutput("dataT")),
-                       tabPanel(title="Estructura",icon = icon("address-card"),value= "datos.2",verbatimTextOutput("structure")),
-                       tabPanel(title="Resumen estadísticas",icon = icon("address-card"),value= "datos.3",verbatimTextOutput("summary"))
+                       tabPanel(title="Datos",icon = icon("table"),value= "datos.1", DT::dataTableOutput("dataT")),
+                       tabPanel(title="Estructura",icon = icon("uncharted"),value= "datos.2",verbatimTextOutput("structure")),
+                       tabPanel(title="Resumen estadísticas",icon = icon("chart-pie"),value= "datos.3",verbatimTextOutput("summary"))
                 )
         ),
         # second tab item or landing page here ..
@@ -256,7 +257,7 @@ ui <- fluidPage(
                                   fluidRow(
                                     br(),
                                     withSpinner(tmapOutput( outputId = "map_plot"))),br(),
-                                  actionButton("reset_input", "Base de Datos", icon("paper-plane"), 
+                                  actionButton("reset_input", "Base de Datos", icon("fa-light fa-table-list"), 
                                                style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
                                   br(),br(),
                                   
@@ -267,7 +268,7 @@ ui <- fluidPage(
                        tabPanel(title="Bloqueados",
                                 fluidPage(fluidRow(br(),
                                                    withSpinner(tmapOutput(outputId = "map_plot_b"))),br(),
-                                          actionButton("reset_input_b", "Base de Datos", icon("paper-plane"), 
+                                          actionButton("reset_input_b", "Base de Datos", icon("fa-light fa-table-list"), 
                                                        style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
                                           br(),br(),
                                           fluidRow(
@@ -278,6 +279,7 @@ ui <- fluidPage(
       )
     )
   )
+  
 )
 
 # Definción de la funcionalidad lógica de la aplicación (servidor)
@@ -351,7 +353,7 @@ server <- function(input, output, session) {
   observeEvent(input$map_plot_marker_click,{
     output$data_filtro<- DT::renderDataTable({
       click<-input$map_plot_marker_click
-      direccion_print<-direccion_unique[paste('X',direccion_unique$indice,sep="")==click$id ,
+      direccion_print<-direccion_unique[paste('X',direccion_unique$Indice,sep="")==click$id ,
                                         'Direcciones_c']
       datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
       datos_print    
@@ -387,11 +389,13 @@ server <- function(input, output, session) {
   })
   
   
+  # Pasar los datos a formato sf tomando algunos datos bloqueados
   direcciones_sf_b <- direccion_unique_b %>% 
     st_as_sf(coords = c('Longitud', 'Latitud')) %>%
     st_set_crs(value = 4326) %>%
     st_transform(crs = 3857) %>%
     st_intersection(area_metropolitana)
+  
   output$map_plot_b<-renderTmap({
     if (is.null(input$var5) ){
       direcciones_sf_filtro_b<-direcciones_sf_b
@@ -414,15 +418,14 @@ server <- function(input, output, session) {
   observeEvent(input$map_plot_b_marker_click,{
     output$data_filtro_b<- DT::renderDataTable({
       click<-input$map_plot_b_marker_click
-      
-      direccion_print_b<-direccion_unique_b[paste('X',direccion_unique_b$indice,sep="")==click$id ,
+       direccion_print_b<-direccion_unique_b[paste('X',direccion_unique_b$Indice,sep="")==click$id ,
                                             'Direcciones_c']
       datos_print_b<- datos_b[datos_b$Direcciones_c==direccion_print_b$Direcciones_c,]  
       datos_print_b
     }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
                       initComplete = JS(
                         "function(settings, json) {",
-                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' });",
+                        "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' } );",
                         "}"),
                       columnDefs=list(list(className='dt-center',targets="_all"))
     ),
