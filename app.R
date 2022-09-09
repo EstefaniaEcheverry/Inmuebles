@@ -55,8 +55,6 @@ datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_c
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 
-is.element(nombres_c, names(datos_completos))
-nombres_c[!is.element(nombres_c, names(datos_completos))]
 
 #Crear el objeto de base de datos 
 #datos <- read.csv2("data/direccion_actn.csv", header= TRUE)

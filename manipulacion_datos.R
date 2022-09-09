@@ -154,7 +154,7 @@ for (direccion in inmuebles$Direccion){
 
 ##################### geo codificacion ###############################3
 
-datos <- read.csv2("data_orden/inmuebles_1.csv", header= TRUE,
+datos <- read.csv2("data_orden/inmuebles_2.csv", header= TRUE,
                    fileEncoding = "UTF-8")
 #datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE,
                   # fileEncoding = "UTF-8")
@@ -173,7 +173,7 @@ write.csv2(x = rbind(unique(localizaciones_nuevas[,c(1,3,4)]),localizaciones), f
                             row.names = F, fileEncoding = "UTF-8" )
 
 
-inmuebles$localizaciones.lat<-0
+inmuebles$localizaciones.lat<- 0
 inmuebles$localizaciones.long<- 0
 inmuebles$localizaciones.address <- ''
 for (i in  localizaciones_nuevas$id ){
