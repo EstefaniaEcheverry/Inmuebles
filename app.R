@@ -55,6 +55,9 @@ datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_c
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 
+is.element(nombres_c, names(datos_completos))
+nombres_c[!is.element(nombres_c, names(datos_completos))]
+
 #Crear el objeto de base de datos 
 #datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
 #names(datos)
@@ -195,10 +198,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5573 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 48 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5521 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1052 de estos inmuebles y Laureles 871 
+                                tags$p(" Son 5571 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 35 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5536 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1055 de estos inmuebles y Laureles 873 
                                      inmuebles. ")
                          )
                        )

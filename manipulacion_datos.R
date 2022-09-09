@@ -72,7 +72,7 @@ separador_def<-function(texto,palabras_eliminar,palabras_inter){
 
 #######################################################################################
 # Lectura de datos
-inmuebles <- read_excel("data_orden/BaseDatosInmueblesPortada07-09-2022.xls")
+inmuebles <- read_excel("data_orden/BaseDatosInmueblesPortada09-09-2022.xls")
 # Seleccionar solo los sectores de interes
 centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25")
 inmuebles <- inmuebles[is.element(inmuebles$CentroCostos, 
@@ -115,7 +115,7 @@ palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","
                     "JACARANDAS","VILLA","AGUAS","ARRECIFES","ACUARELA","ACUARELAS","GUADUALES","RESERVA","LA   RESERVA","ENTRE", "PLAZA","LA PLAZA","CASTELLON","NUCLEO","PRADO","PRADOS","NUEVO","PARCELACION",
                     "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO","CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON","AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE","SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE","PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA","CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA","NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO","CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL","GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA","URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO")
 # Palabras a eliminar de las direcciones 
-palabras_eliminar <- c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF")
+palabras_eliminar <- c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO")
 
 # direccion y nombre apartamento
 direcciones <- c ()
@@ -146,7 +146,7 @@ inmuebles$Lugar <- palabras_apa
 
 # Eliminar las palabras de las direcciones para las localizaciones
 palabras_no <- c ("CONJUNTO", "AP","CA", "ET", "INT", "ED", "URBANIZACION",
-                  "PRIMER", "CASA","LO","CS","PISO", "IN","OF")
+                  "PRIMER", "CASA","LO","CS","PISO", "IN","OF", "TO")
 Direcciones_c<-c()
 for (direccion in inmuebles$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,palabras_no)[1])
@@ -159,7 +159,7 @@ datos <- read.csv2("data_orden/inmuebles_1.csv", header= TRUE,
 #datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE,
                   # fileEncoding = "UTF-8")
 
-localizaciones <- unique(read.csv2("data/localizaciones_2.csv",header=T))
+localizaciones <- unique(read.csv2("data/localizaciones_3.csv",header=T))
 id_inmuebles<-c(datos$IdInmueble)  
 filtro<-(!is.element( inmuebles$IdInmueble,id_inmuebles ) &
            !is.element(Direcciones_c, localizaciones$address))
