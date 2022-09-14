@@ -1,0 +1,762 @@
+---
+title: "Inmueble_Arriendo"
+author: "Estefania Echeverry Franco"
+date: '2022-08-17'
+output: html_document
+---
+
+## Inmuebles en Arriendo
+
+Son 5483 inmuebles controlados por los diferentes Centros de costos , segun los datos 24 de estos inmuebles estan bloqueados o desactivados, es decir, existen 5459 inmuebles activos distribuidos por los centros de costos; Los Colores maneja 1056 de estos inmuebles y Laureles 871 inmuebles.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r ,include=FALSE,warning=FALSE}
+#Cargar las librerias
+library(DT)
+library(sf)
+library(sp)
+library(tmap)
+library(dplyr)
+library(ggmap)
+library(tidyr)
+library(readxl)
+library(ggplot2)
+library(leaflet)
+library(stringr)
+library(ggthemes)
+library(tidyverse)
+library(rstudioapi)
+library(kableExtra)
+library(tidygeocoder)
+library(rgeoboundaries)
+#Decargar paquete de github
+# install.packages("remotes")
+remotes::install_github("wmgeolab/rgeoboundaries")
+#Cargar la base de datos
+setwd("~/Inmuebles Arrendados/Portada Inmobiliaria/Inmuebles_Arrendados")
+inmuact_new <- read_excel("data/datos_nuevos.xls")
+# Comienzo de la base de datos
+#head(inmuact_new)
+# Convertir las cedulas a caracteres
+inmuact_new$`P Cedula` <- as.character(inmuact_new$ `P Cedula`)
+inmuact_new$`A. Cedula` <- as.character(inmuact_new$ `A. Cedula`)
+#str(inmuact_new)
+#Convertir los centro de costos en factores
+inmuact_new$CentroCostos <- as.factor(inmuact_new$CentroCostos)
+# Seleccionar solo los sectores de interes
+inmuact_newfil <- inmuact_new[is.element(inmuact_new$CentroCostos, c("01","02","03","04","08","09","10","11","12","19","22","25")), ]
+
+# Buscar la posición de Rionegro en la variable Ciudad
+#which(inmuact_newfil$Ciudad == "RIONEGRO")
+# Cambiar la ciudad Rionegro por Medellin, falla de asignación de la ciudad
+inmuact_newfil[3420, 7] <- "MEDELLIN"
+#inmuact_newfil[3468, 2] <- "01"
+# Nueva variable con nombre de los sectores seleccionados
+inmuact_newfil$CentroCostos_n <- factor(inmuact_newfil$CentroCostos, labels = c("Laureles","Sabaneta","Poblado","Colores","Envigado","Itagui","Centro","Bello","La estrella", "San Antonio Pr." , "Calasanz","Fontibon"))
+```
+
+```{r}
+inmuebles_act <- inmuact_newfil[is.element(inmuact_newfil$Bloqueado, "False" ), ]
+inmuebles_bloq <- inmuact_newfil[is.element(inmuact_newfil$Bloqueado, "True"),  ]
+```
+
+```{r,echo=FALSE, warning=FALSE}
+#Tabla del total y porcentajes por centro de costo
+tabla_cc <- inmuebles_act %>% group_by(CentroCostos_n) %>% summarise(Total=n()) %>%  dplyr::mutate(Porcentaje = round(Total/sum(Total)*100, 1))
+# Gráfica de Centro total de Costos
+ggplot(tabla_cc, aes(x=CentroCostos_n, y = Total, fill=CentroCostos_n )) + geom_bar( stat="identity"              
+           )+  
+  
+  ylim(c(0,1060))+
+  labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable centro de costos") +   
+  labs(fill = "")+                                         
+  
+  geom_text(aes(label=paste0(Total," ", "", "\n(", Porcentaje, "%",")")),  
+            vjust=1.3,                         
+            color="black",                     
+            hjust=0.5,                         
+            position = position_dodge(0.9),    
+            angle=0,                           
+            size=4.0                            
+            ) +  
+  scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
+                                                            "La estrella", "San Antonio Pr" , "Calasanz","Fontibon")) +    
+  
+  theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
+  theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+```{r, echo=FALSE, warning=FALSE}
+# Tabla de conteos y porcentajes de centro de costes
+ kbl(tabla_cc) %>%
+  kable_paper("hover", 
+              full_width = F)
+```
+
+```{r,echo=FALSE, warning=FALSE}
+#Tabla del total y porcentajes por centro de costo
+tabla_cc1 <- inmuebles_bloq %>% group_by(CentroCostos_n) %>% summarise(Total=n()) %>%  dplyr::mutate(Porcentaje = round(Total/sum(Total)*100, 1))
+# Gráfica de Centro total de Costos
+ggplot(tabla_cc1, aes(x=CentroCostos_n, y = Total, fill=CentroCostos_n )) + geom_bar( stat="identity"              
+           )+  
+  
+  ylim(c(0,5))+
+  labs(x="Centros de costos", y= "Frecuencia",title = "Gráfica de los apartamentos bloqueados") +   
+  labs(fill = "")+                                         
+  
+  geom_text(aes(label=paste0(Total," ", "", "\n(", Porcentaje, "%",")")),  
+            vjust=1.3,                         
+            color="black",                     
+            hjust=0.5,                         
+            position = position_dodge(0.9),    
+            angle=0,                           
+            size=4.0                            
+            ) +  
+  scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
+                                                            "La estrella", "San Antonio Pr" , "Calasanz","Fontibon")) +    
+  
+  theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
+  theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+```{r, echo=FALSE, warning=FALSE}
+# Tabla de conteos y porcentajes de centro de costes
+ kbl(tabla_cc1) %>%
+  kable_paper("hover", 
+              full_width = F)
+```
+La mayoria de los inmuebles se encuentran en Medellin con 2875 inmuebles , es decir, un 52.7 % de los inmuebles de los datos proporcionados.
+
+```{r, echo=FALSE, warning=FALSE}
+# Tabla total de cada ciudad y porcentajes por Ciudad
+tabla_ciudad <- inmuebles_act %>% group_by(Ciudad) %>% summarise(Total.c=n()) %>%  dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))
+
+# Gráfica de Ciudad
+ggplot(tabla_ciudad, aes(x=Ciudad , y = Total.c, fill=Ciudad )) + geom_bar(width = 0.9, stat="identity")+  
+  
+  ylim(c(0,2900))+
+  labs(x="Ciudad", y= "Frecuencia",title = "Diagrama de barras para la variable Ciudad") +   
+  labs(fill = "")+                                         
+  
+  geom_text(aes(label=paste0(Total.c," ", "", "\n(", Porcentaje, "%",")")),  
+            vjust=1.3,                         
+            color="black",                     
+            hjust=0.5,                         
+            position = position_dodge(0.9),    
+            angle=0,                           
+            size=4.0                            
+            ) +  
+  scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
+                                                            "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio de Prado", "Bogota","Rionegro")) +    
+
+  theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1))                                        
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE}
+# Tabla de conteo y porcentaje de ciudades
+kbl(tabla_ciudad) %>%
+  kable_paper("hover", 
+              full_width = F)
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# Tabla total de cada ciudad y porcentajes por Ciudad
+tabla_ciudad1 <- inmuebles_bloq %>% group_by(Ciudad) %>% summarise(Total.c=n()) %>%  dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1))
+
+# Gráfica de Ciudad
+ggplot(tabla_ciudad1, aes(x=Ciudad , y = Total.c, fill=Ciudad )) + geom_bar(width = 0.9, stat="identity")+  
+  
+  ylim(c(0,15))+
+  labs(x="Ciudad", y= "Frecuencia",title = "Diagrama de barras para la variable Ciudad") +   
+  labs(fill = "")+                                         
+  
+  geom_text(aes(label=paste0(Total.c," ", "", "\n(", Porcentaje, "%",")")),  
+            vjust=1.3,                         
+            color="black",                     
+            hjust=0.5,                         
+            position = position_dodge(0.9),    
+            angle=0,                           
+            size=4.0                            
+            ) +  
+  scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
+                                                            "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr")) +    
+
+  theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1))                                        
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+# Tabla de conteo y porcentaje de ciudades
+kbl(tabla_ciudad1) %>%
+  kable_paper("hover", 
+              full_width = F)
+```
+
+
+La mayoría de los inmuebles tiene aseguradora "El Libertador" con un 85.8 % del total de los inmuebles, y sin seguro es de un 7 %.
+
+```{r, echo=FALSE, warning=FALSE,fig.align="center",echo=FALSE}
+# Tabla total de cada ciudad y porcentajes por Aseguradora
+tabla_aseg <- inmuebles_act %>% group_by(Aseguradora) %>% summarise(Total.a=n()) %>%  dplyr::mutate(Porcentaje = round(Total.a/sum(Total.a)*100, 1))
+
+# Gráfica de Aseguradora
+  ggplot(tabla_aseg, aes(x=Aseguradora, y = Total.a, fill=Aseguradora )) + geom_bar(width = 0.9, stat="identity",              
+           position = position_dodge())+  
+  
+  ylim(c(0,4700))+
+  labs(x="Aseguradoras", y= "Frecuencia",title = "Diagrama de barras para la variable Aseguradora") +   
+  labs(fill = "")+                                         
+  
+  geom_text(aes(label=paste0(Total.a," ", "", "\n(", Porcentaje, "%",")")),  
+            vjust=1.3,                         
+            color="black",                     
+            hjust=0.5,                         
+            position = position_dodge(0.9),    
+            angle=0,                           
+            size=4.0                            
+            ) +  
+  scale_fill_discrete(name = "Aseguradora", labels = c("El libertador" , "El libertador 14 lim", "El libertador lim 12", "El libertador lim 6", "El libertador lim  18", "Portada Inmobiliaria SAS" , "sin Seguro")) +    
+  
+  theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) +  
+  theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r, echo=FALSE, warning=FALSE,fig.align="center"}
+# Tabla de conteo y porcentaje de aseaguradoras
+kbl(tabla_aseg) %>%
+  kable_paper("hover", 
+              full_width = F)
+```
+```{r, echo=FALSE, warning=FALSE,fig.align="center",echo=FALSE}
+# Tabla total de cada ciudad y porcentajes por Aseguradora
+tabla_aseg1 <- inmuebles_bloq %>% group_by(Aseguradora) %>% summarise(Total.a=n()) %>%  dplyr::mutate(Porcentaje = round(Total.a/sum(Total.a)*100, 1))
+
+# Gráfica de Aseguradora
+  ggplot(tabla_aseg1, aes(x=Aseguradora, y = Total.a, fill=Aseguradora )) + geom_bar(width = 0.9, stat="identity",              
+           position = position_dodge())+  
+  
+  ylim(c(0,20))+
+  labs(x="Aseguradoras", y= "Frecuencia",title = "Diagrama de barras para la variable Aseguradora") +   
+  labs(fill = "")+                                         
+  
+  geom_text(aes(label=paste0(Total.a," ", "", "\n(", Porcentaje, "%",")")),  
+            vjust=1.3,                         
+            color="black",                     
+            hjust=0.5,                         
+            position = position_dodge(0.9),    
+            angle=0,                           
+            size=4.0                            
+            ) +  
+  scale_fill_discrete(name = "Aseguradora", labels = c("El libertador" , "El libertador 14 lim", "El libertador lim 12", "El libertador lim 6", "El libertador lim  18", "Portada Inmobiliaria SAS" , "sin Seguro")) +    
+  
+  theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) +  
+                                                      
+  theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r, echo=FALSE, warning=FALSE,fig.align="center"}
+# Tabla de conteo y porcentaje de aseaguradoras
+kbl(tabla_aseg1) %>%
+  kable_paper("hover", 
+              full_width = F)
+```
+
+La distribución de los precios por centros de costos, el lugar con los outliers mas lejanos es laureles, aunque dependera de que sitio es y que tipo de inmueble es.
+
+```{r, echo=FALSE, warning=FALSE,fig.align="center"}
+# Histograma de Canon + Admin + IVA vs Centros de costos
+ggplot(inmuebles_act, aes(x= CentroCostos_n, y= `Vr Canon`, fill=CentroCostos_n)) + geom_boxplot() +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("Histrograma entre Centro de Costos vs el Valor de Canon") +
+theme (plot.title = element_text(family="Comic Sans MS",
+                                  size=rel(1), #Tamaño relativo de la letra del título
+                                  vjust=2, #Justificación vertical, para separarlo del gráfico
+                                  face="bold", #Letra negrilla. Otras posibilidades "plain", "italic", "bold" y "bold.italic"
+                                   color="red", #Color del texto
+                                  lineheight=0.5)) +
+  labs(x="  Centro de costos",y = "Valor del Canon")
+```
+En el diagrama de dispersión se ve como dos tendencias, una es que muchos de los inmuebles no agregan el valor de la administración, la cual registra como cero, y la otra un poco logica es que a medida que el inmueble se arrienda por un precio más alto, la adminidtración tambien tiende a crecer, incluso hay un outlier del centro de costos de Laureles, donde hay un inmueble que paga por adminitración un poco más de la mitad del valor del arriendo.
+
+```{r, echo=FALSE, warning=FALSE,fig.align="center"}
+# Gráfico de dispersión de Vr. Canon vs Valor Administración
+ggplot(inmuebles_act, aes(x=`Vr Canon`, y=`Vr Administracion`, color=CentroCostos_n)) + geom_point()+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("Diagrama de dispercion entre Valor de Canon vs el Valor de AdministraciOn") +
+theme (plot.title = element_text(family="Comic Sans MS",
+                                  size=rel(1), #Tamaño relativo de la letra del título
+                                  vjust=2, #Justificación vertical, para separarlo del gráfico
+                                  face="bold", #Letra negrilla. Otras posibilidades "plain", "italic", "bold" y "bold.italic"
+                                   color="red", #Color del texto
+                                  lineheight=0.5)) +
+  labs(x="Valor de Canon",y = "Valor de la AdministraciOn") 
+
+```
+```{r, echo=FALSE, warning=FALSE,fig.align="center"}
+# Gráfico de dispersión de Vr. Canon vs Valor Administración
+ggplot(inmuebles_bloq, aes(x=`Vr Canon`, y=`Vr Administracion`, color=CentroCostos_n)) + geom_point()+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("Diagrama de dispercion entre Valor de Canon vs el Valor de AdministraciOn") +
+theme (plot.title = element_text(family="Comic Sans MS",
+                                  size=rel(1), #Tamaño relativo de la letra del título
+                                  vjust=2, #Justificación vertical, para separarlo del gráfico
+                                  face="bold", #Letra negrilla. Otras posibilidades "plain", "italic", "bold" y "bold.italic"
+                                   color="red", #Color del texto
+                                  lineheight=0.5)) +
+  labs(x="Valor de Canon",y = "Valor de la AdministraciOn") 
+
+```
+
+El siguiente diagrama es de El valor del IVA vs El valor del Canon del inmubele, una tendencia positiva a medida que vale mas el inmueble, mayor valor del IVA existe, sin embargo hay muchos datos que se encuentran en cero.
+
+```{r, echo=FALSE, warning=FALSE,fig.align="center"}
+# Gráfico de dispersión de Vr. Canon vs Valor Administración
+ggplot(inmuebles_act, aes(x=`Vr Canon`, y=`Valor Iva`, color=CentroCostos_n)) + geom_point() +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) + ggtitle("Diagrama de dispercion entre Valor de Canon vs el Valor del IVA") +
+theme (plot.title = element_text(family="Comic Sans MS",
+                                  size=rel(1), #Tamaño relativo de la letra del título
+                                  vjust=2, #Justificación vertical, para separarlo del gráfico
+                                  face="bold", #Letra negrilla. Otras posibilidades "plain", "italic", "bold" y "bold.italic"
+                                   color="red", #Color del texto
+                                  lineheight=0.5)) +
+  labs(x="Valor de Canon",y = "Valor del IVA") 
+
+```
+
+Se toman las direcciones crudas y se separa la parte de lo apartamentos para conectar el nombre los conjuntos y poder hayar las localizaciones 
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Eliminar las partes que no quiero en las direcciones y dejar los nombres de las unidades
+separador<-function(texto,palabras){
+  for (palabra in palabras){
+    vector<-unlist( strsplit(texto, palabra),use.names = F)
+    texto<-c()
+    for (j in vector){
+      texto<-c(texto,j)
+    }
+  }
+  
+  return(texto ) 
+}
+separador_def<-function(texto,palabras_eliminar,palabras_inter){
+  palabras_inter<- paste(" ",palabras_inter," ",sep="")
+  palabras_eliminar<-paste(" ",palabras_eliminar," ",sep="")
+  for (palabra in c(palabras_inter,palabras_eliminar) ){
+    vector_new<-c()
+    vector<-strsplit(texto,palabra )
+    for (i in vector ){
+      if(length(i)==1){
+        for (j in i ){  
+          vector_new<-c(vector_new,j)
+        }
+      }
+      else{
+        contar<-1
+        for (j in i ){ 
+          if(contar==1){
+            vector_new<-c(vector_new,j)
+          }
+          else{
+            vector_new<-c(vector_new,paste(" ",palabra,j,sep=""))            
+          }
+          
+          
+          contar<-contar+1
+        }
+      }
+    }
+    
+    texto<-c()
+    for (j in vector_new){
+      texto<-c(texto,j)
+    }
+  }
+  texto_final<-c()
+  texto_separado<-c()
+  for (i in texto){
+    sep_1<-separador(i,palabras_eliminar )
+    if (length( sep_1)==1 ){
+      texto_final<-c(texto_final,i)
+    }
+    else{
+      texto_separado<-c(texto_separado,i)
+    }
+  }
+  texto_final_<-str_replace_all(str_c(texto_final,collapse = ""),"  "," ") 
+  texto_separado_<-str_replace_all(str_c(texto_separado,collapse = ""),"  "," ") 
+  return(c(texto_final_,texto_separado_)) 
+}
+
+# Palabras que se junta con cada dirección
+palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","URBANIZACION","URB", 
+                    "EDIFICIO","EDIFICO","ED","EDF","MULTIFAMILIAR","MULTIFAMILIARES","LC",
+                    "UNIDAD","MIRADOR","LOMA","LOMAS","LOS CABOS","BALCONES","TORRES","TORRE",
+                    "SERRANA","SERRANIAS","PARQUE","PARQUES","SETAI", "ABADIA","GUAYACANES",
+                    "EL CORTIJO", "OASIS","CALASANZ", "LAS CASAS", "LOS LAURELES", "PORTONES",
+                    "SANDIEGO", "SAN DIEGO","TIERRA","PUNTA","ARBOLEDA","ROSEDAL","PORTON","MEDITERRANEA",
+                    "ALAMEDA","CEDROS","CAMINO","RECINTO","BOSQUES","BALCON","BULEVAR","LAS VEGAS","REMANSO",
+                    "CONQUISTADOR","ALTOS,","COLINAS","CORAZON","LAS ANTILLAS","CONDOMINIO","CIUDADELA","PARIS",
+                    "JACARANDAS","VILLA","AGUAS","ARRECIFES","ACUARELA","ACUARELAS","GUADUALES","RESERVA","LA   RESERVA","ENTRE", "PLAZA","LA PLAZA","CASTELLON","NUCLEO","PRADO","PRADOS","NUEVO","PARCELACION",
+                    "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO","CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON","AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE","SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE","PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA","CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA","NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO","CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL","GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA","URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO")
+# Palabras a eliminar de las direcciones 
+palabras_eliminar <- c("AP", "INT","BL","CASA", "CS","IN", "APT")
+
+```
+
+Se guardan las direcciones en un nuevo vector llamado direcciones y el vector palabras_apa es el número del apartamento.
+
+```{r}
+direcciones <- c ()
+palabras_apa<-c()
+for (direccion in inmuact_newfil$Direccion){
+  palabrastemp<-separador_def(direccion,
+                              palabras_eliminar,
+                              palabras_inter)
+  direcciones<-c(direcciones,palabrastemp[1])
+  palabras_apa<-c(palabras_apa,palabrastemp[2])
+}
+inmuact_newfil$direcciones <- direcciones
+inmuact_newfil$palabras_apa <- palabras_apa
+```
+
+```{r}
+direcciones <- c()
+palabras_apa<-c()
+for (direccion in inmuact_newfil$Direccion){
+  palabrastemp<-separador_def(direccion,
+                              palabras_inter,
+                              palabras_eliminar)
+  direcciones<-c(direcciones,palabrastemp[1])
+  palabras_apa<-c(palabras_apa,palabrastemp[2])
+}
+inmuact_newfil$NombredelLugar <- palabras_apa
+
+```
+
+Se crea un nuevo vector llamado Direcciones_c, el cual tiene las direcciones sin el apartamento y sin el nombre del conjunto, urbanización, edificio, etc; es decir, solo la dirección sin ningun nombre.
+
+```{r}
+# Eliminar las palabras de las direcciones para las localizaciones
+palabras_no <- c ("CONJUNTO", "AP","CA", "ET", "INT", "ED", "URBANIZACION", "PRIMER", "CASA","LO","CS","PISO")
+separador<-function(texto,palabras= palabras_no){
+  for (palabra in palabras){
+    vector<-strsplit(texto,palabra)
+    texto<-c()
+    for (j in vector){
+      texto<-c(texto,j)
+    }
+  }
+  
+  return(texto[1] ) 
+}
+Direcciones_c<-c()
+for (direccion in inmuact_newfil$Direccion){
+Direcciones_c<-c(Direcciones_c,separador(direccion))
+}
+inmuact_newfil$Direcciones_c <- Direcciones_c
+```
+
+```{r , echo= FALSE,warning=FALSE, message=FALSE}
+# Leer la base de datos creada de las localizaciones
+localizaciones <- read.csv("data/localizaciones_n.csv",sep=",",header=T)
+```
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Prueba para tomar solo las direcciones una vez
+direccion_uno <- as.data.frame(table(inmuact_newfil$direcciones) [table(inmuact_newfil$direcciones) > 1] )
+```
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Direccion sin repetir solo un apartemento, local o casa
+inmueble_uno <- as.data.frame(table(inmuact_newfil$direcciones) [table(inmuact_newfil$direcciones) == 1] )
+inmueble_uno <- inmuact_newfil[ is.element(inmuact_newfil$direcciones,inmueble_uno$Var1),]
+```
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Prueba a Inmuebles sf
+direccion_rep <- as.data.frame(table(inmuact_newfil$Direcciones_c) [table(inmuact_newfil$Direcciones_c) > 1] )
+sum(direccion_rep$Freq)
+
+
+inmuact_prueba <- inmuact_newfil[ is.element(inmuact_newfil$direcciones,direccion_rep$Var1),]
+```
+# Resumen de los datos
+
+```{r, include=FALSE}
+summary(localizaciones)
+```
+
+# Revisar si alguna localizacion tiene NA, la dirección 3526 no tiene localizaciones
+
+```{r, include=FALSE}
+  which(is.na(localizaciones$long))
+```
+
+Agregar las ciudades a la localización para poder discretizar por ciudades
+
+```{r}
+localizaciones$Ciudad <- inmuact_newfil$Ciudad
+
+```
+
+
+```{r, include=FALSE}
+# Arreglar las direcciones que no de geolocalizan en donde es
+#Condicinal para eligir las malas georeferenciaciones
+mallocal<- localizaciones[localizaciones$long <= -76 |  localizaciones$long > -75 | localizaciones$lat >= 7 |localizaciones$lat < 6, ]
+mallocal <- mallocal[mallocal$Ciudad != "BOGOTA",]
+mallocal[40, 1] <- "CR 53 84 A 56 URBANIZACION VIVIENDAS DEL SUR NUCLEOS 3, 4, 5, 10, 11 ITAGUI , COLOMBIA"
+```
+
+
+```{r, include=FALSE}
+#rownames(mallocal) <-1:dim(mallocal)[1]
+rownames(mallocal) <-NULL
+```
+
+
+```{r}
+mallocal <- read.csv2("data/mallocal.csv", sep=";", header= TRUE)
+
+```
+
+
+```{r, include= FALSE,warning=FALSE, message=FALSE}
+for (i in  mallocal$address[!is.na(mallocal$address)] ){
+filtro1<-localizaciones$address==i
+filtro2<-mallocal$address==i
+filtro2[is.na(filtro2)]<-F
+if (nrow(localizaciones[filtro1,])>0){
+localizaciones[filtro1,]$lat<-unique(mallocal[filtro2,]$lat)
+localizaciones[filtro1,]$long<-unique(mallocal[filtro2,]$long)
+}
+}
+```
+
+```{r}
+# Eliminar las ciudades de las localizaciones
+localizaciones[3526, 2] <- 6.19279
+localizaciones[3526, 3] <- -75.59486
+
+localizaciones <- localizaciones[,-4]
+```
+
+
+
+```{r, include= FALSE,warning=FALSE, message=FALSE}
+# Actualizar las localizaciones a la base de datos inmuact_newfil
+inmuact_newfil$localizaciones <- localizaciones
+
+```
+
+```{r}
+# Separar los apartamentos de los que siguen manejando a los que no 
+inmuebles_act <- inmuact_newfil[is.element(inmuact_newfil$Bloqueado, "False" ), ]
+inmuebles_bloq <- inmuact_newfil[is.element(inmuact_newfil$Bloqueado, "True"),  ]
+```
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Agrupación por direcciones y localizaciones
+direccion_uncia <- c()
+direccion_unica <- inmuact_newfil %>%
+  group_by(localizaciones[,2:3]) %>%
+  summarise(Total = n(),valor.p = mean(`Vr Canon`),Residencia = unique(Direcciones_c)[1], NombredelLugar = unique(NombredelLugar)[1], Lugar = Ciudad) # cuenta la cantidad de filas que hay por esa agrupación
+summary(direccion_unica)
+table(direccion_unica$NombredelLugar == "")
+
+```
+
+```{r}
+# Agrupación por direcciones 
+conct_catacter<- function(caracteres ){
+  caracteres<- unique(caracteres)
+  caracteres_<-caracteres[1]  
+  if (length(caracteres)>1 ){
+    
+    for (i in caracteres[2:length(caracteres)] ){
+      caracteres_<-paste(caracteres_,i,sep="," )
+    }
+    
+  }
+  
+  return(caracteres_)
+}
+
+# Agrupación por direcciones limpias
+direccion_unique <- inmuebles_act %>%
+  group_by(Direcciones_c) %>%
+  summarise( Nombre_del_Lugar = conct_catacter(NombredelLugar),Total_de_apartamentos = n(),
+              Centro_de_Costos = conct_catacter(CentroCostos_n),
+              Ciudad = conct_catacter(Ciudad),
+             Valor.min = min(`Vr Canon`),Valor.max = max(`Vr Canon`), 
+             Valor.prom = mean(`Vr Canon`),
+            Valor.promad = mean(`Vr Administracion`),
+            Latitud = mean(localizaciones$lat),
+            Longitud = mean(localizaciones$long)) # cuenta la cantidad de filas que hay por esa agrupación
+summary(direccion_unique)
+```
+
+```{r}
+# Agrupación por direcciones 
+conct_catacter<- function(caracteres ){
+  caracteres<- unique(caracteres)
+  caracteres_<-caracteres[1]  
+  if (length(caracteres)>1 ){
+    
+    for (i in caracteres[2:length(caracteres)] ){
+      caracteres_<-paste(caracteres_,i,sep="," )
+    }
+    
+  }
+  
+  return(caracteres_)
+}
+
+# Agrupación por direcciones limpias
+direccion_bloq <- inmuebles_bloq %>%
+  group_by(Direcciones_c) %>%
+  summarise( Nombre_del_Lugar = conct_catacter(NombredelLugar),Total_de_apartamentos = n(),
+              Centro_de_Costos = conct_catacter(CentroCostos_n),
+              Ciudad = conct_catacter(Ciudad),
+             Valor.min = min(`Vr Canon`),Valor.max = max(`Vr Canon`), 
+             Valor.prom = mean(`Vr Canon`),
+            Valor.promad = mean(`Vr Administracion`),
+            Latitud = mean(localizaciones$lat),
+            Longitud = mean(localizaciones$long)) # cuenta la cantidad de filas que hay por esa agrupación
+summary(direccion_bloq)
+
+```
+
+```{r , include= FALSE,warning=FALSE, message=FALSE}
+# Crear mapa con geoboundaries escogiendo solo los municipios
+area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
+   filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
+                                 "BELLO",    # estan en mayuscula y no estan
+                                 "COPACABANA",# en UTF-8 
+                                 "ENVIGADO",
+                                 "CALDAS", # hay dos caldas en colombia
+                                 "ITAGÃœÃ", # itagui
+                                 "LA ESTRELLA", 
+                                 "SABANETA",
+                                 "SAN JERÃ“NIMO",
+                                 "BOGOTÃ, D.C."
+                                 ) ) 
+          ) %>%
+    st_transform(crs = 3857)
+# Cambiandoles los nombres por como se escribe
+area_metropolitana$shapeName<-c("CALDAS_NO",# no son de antioquia        
+                                "ENVIGADO",
+                                "ITAGÜÍ",
+                                "CALDAS",
+                                "SAN JERÓNIMO",
+                                "BOGOTÁ",
+                                "MEDELLIN",
+                                "COPACABANA",
+                                "BELLO",
+                                 "SABANETA",
+                                "LA ESTRELLA"  
+                                 )
+# Eliminar el Caldas que no es de Antioquia
+area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName == "CALDAS_NO"),]
+
+```
+
+## Mapa interactivo del aréa metropolitana
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Mapa del aréa metropolitana
+ggplot(data=area_metropolitana) + geom_sf()
+```
+
+# Guardar la base de datos original sin filtro de activos y bloqueados
+
+```{r}
+# Guardar el inmuact_newfil e una base de datos excel 
+# Guardar las inmuact_newfil en un formato csv
+write.csv2(x = inmuact_newfil, file ="data/inmuact_newfil.csv" , row.names =F)
+```
+
+```{r}
+# Guardar el inmuact_newfil e una base de datos excel 
+# Guardar las inmuact_newfil en un formato csv
+write.csv2(x = direccion_unique, file ="data/direccion_uniquen.csv" , row.names =F)
+```
+
+```{r}
+#Organizando los datos en una base de datos nueva 
+datosinmun <-cbind(inmuact_newfil[,c(3:5,2,24,7,25:27,29,8:10,14:15,17:18,21:22,28)])
+datosinmun <- datosinmun %>% rename(c("NoCCostos" = "CentroCostos", "CentroCostos"="CentroCostos_n","Direccion" = "direcciones", "Lugar" ="NombredelLugar", "P.Cedula" = "P Cedula", "A.Cedula" ="A. Cedula"))
+
+```
+```{r}
+# Guardar la base de datos organizada de los inmuebles activos en un excel
+write.csv2(x = datosinmun, file ="data/datosinmun.csv" , row.names =F)
+```
+
+```{r}
+#Organizando los datos en una base de datos nueva 
+direccion_actn <-cbind(inmuebles_act[,c(3:5,2,24,7,25:27,29,8:10,14:15,17:18,21:22,28)])
+direccion_actn <- direccion_actn %>% rename(c("NoCCostos" = "CentroCostos", "CentroCostos"="CentroCostos_n","Direccion" = "direcciones", "Lugar" ="NombredelLugar", "P.Cedula" = "P Cedula", "A.Cedula" ="A. Cedula"))
+# Guardar la base de datos de inmuebles activos en un excel
+write.csv2(x = direccion_actn, file ="data/direccion_actn.csv" , row.names =F)
+```
+
+
+```{r}
+#Organizando los datos en una base de datos nueva 
+inmuebles_bloqn <-cbind(inmuebles_bloq[,c(3:5,2,24,7,25:27,29,8:10,14:15,17:18,21:22,28)])
+inmuebles_bloqn <- inmuebles_bloqn %>% rename(c("NoCCostos" = "CentroCostos", "CentroCostos"="CentroCostos_n","Direccion" = "direcciones", "Lugar" ="NombredelLugar", "P.Cedula" = "P Cedula", "A.Cedula" ="A. Cedula" ))
+# Guardar la base de datos de inmuebles bloqueados en un excel
+write.csv2(x = inmuebles_bloqn, file ="data/inmuebles_bloqn.csv" , row.names =F)
+```
+
+```{r}
+# Guardar la base de datos de inmuebles bloqueados en un excel
+write.csv2(x = direccion_bloq, file ="data/direccion_bloqn.csv" , row.names =F)
+```
+
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Pasar los datos a formato sf tomando algunos datos de la base
+inmuebles_sf <- cbind(inmuact_newfil[,c(3:5,8:10,14:15,17:18,24:26)], inmuact_newfil$localizaciones[,2:3]) %>% 
+  st_as_sf(coords = c('lat', 'long')) %>%
+  st_set_crs(value = 4326) %>%
+  st_transform(crs = 3857) %>%
+ st_intersection(area_metropolitana)
+
+```
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Pasar los datos a formato sf tomando algunos datos de la base
+direcciones_sf <- direccion_unique %>% 
+  st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+  st_set_crs(value = 4326) %>%
+  st_transform(crs = 3857) %>%
+ st_intersection(area_metropolitana)
+
+```
+
+
+```{r}
+# Pasar los datos a formato sf tomando algunos datos de la base
+direcciones_bloq <- direccion_bloq %>% 
+  st_as_sf(coords = c('Longitud', 'Latitud')) %>%
+  st_set_crs(value = 4326) %>%
+  st_transform(crs = 3857) %>%
+ st_intersection(area_metropolitana)
+
+```
+
+## Mapa del aréa metropolitana con los inmuebles por color de los Centros de costos
+
+```{r, echo= FALSE,warning=FALSE, message=FALSE}
+# Mapa del aréa metropolitana con los inmuebles por color de los Centros de costos
+tmap_mode('view')
+
+  tm_shape(shp = direcciones_sf)+ # coordenadas lat long
+  tm_dots(size = 0.03,col = "Centro_de_Costos")
+```
+
+
+
+
+
+
+
+
