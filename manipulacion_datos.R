@@ -1,4 +1,4 @@
-# geocodificación
+# Geocodificación
 
 #librerias 
 library(readxl) # leer archivos xls
@@ -72,7 +72,7 @@ separador_def<-function(texto,palabras_eliminar,palabras_inter){
 
 #######################################################################################
 # Lectura de datos
-inmuebles <- read_excel("data_orden/BaseDatosInmueblesPortada13-09-2022.xls")
+inmuebles <- read_excel("data_orden/BaseDatosInmueblesPortada15-09-2022.xls")
 # Seleccionar solo los sectores de interes
 centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25")
 inmuebles <- inmuebles[is.element(inmuebles$CentroCostos, 
@@ -100,9 +100,7 @@ names(inmuebles)[names(inmuebles)=='Valor Iva']<-'Valor.Iva'
 inmuebles$P.Cedula <- as.character(inmuebles$P.Cedula)
 inmuebles$A.Cedula <- as.character(inmuebles$A.Cedula)
 
-## modificacion de direcciones
-
-
+## Modificacion de direcciones
 # Palabras que se junta con cada dirección
 palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","URBANIZACION","URB", 
                     "EDIFICIO","EDIFICO","ED","EDF","MULTIFAMILIAR","MULTIFAMILIARES","LC",
@@ -154,12 +152,12 @@ for (direccion in inmuebles$Direccion){
 
 ##################### geo codificacion ###############################3
 
-datos <- read.csv2("data_orden/inmuebles_09.csv", header= TRUE,
+datos <- read.csv2("data_orden/inmuebles_14.csv", header= TRUE,
                    fileEncoding = "UTF-8")
 #datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE,
                   # fileEncoding = "UTF-8")
 
-localizaciones <- unique(read.csv2("data/localizaciones_4.csv",header=T))
+localizaciones <- unique(read.csv2("data/localizaciones_5.csv",header=T))
 id_inmuebles<-c(datos$IdInmueble)  
 filtro<-(!is.element( inmuebles$IdInmueble,id_inmuebles ) &
            !is.element(Direcciones_c, localizaciones$address))
@@ -203,6 +201,6 @@ for (i in inmuebles$IdInmueble[filtro_]){
 }
 
 
-write.csv2(x = inmuebles, file = "data_orden/inmuebles_13.csv", row.names = F,
+write.csv2(x = inmuebles, file = "data_orden/inmuebles_15.csv", row.names = F,
            fileEncoding = "UTF-8")
  
