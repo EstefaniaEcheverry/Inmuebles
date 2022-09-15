@@ -1004,8 +1004,10 @@ server <- function(input, output, session) {
   output$scatter <- renderPlotly({
     
     datos_plot<-datos[is.element(datos$Tipo_de_Inmueble,input$inmueble_scatter),]
+    datos_plot$Total<-datos_plot[,input$varx]+datos_plot[,input$vary]
+    datos_plot$Total<-paste(datos_plot$Total,'\n ID inmueble:', datos_plot$IdInmueble,sep=''  )
     sc <- datos_plot %>%
-      ggplot(aes(x=get(input$varx), y =get(input$vary), label= IdInmueble)) +
+      ggplot(aes(x=get(input$varx), y =get(input$vary), label= Total)) +
       geom_point(aes(colour = (CentroCostos))) +
       labs(title = paste("Diagrama de dispersión entre", input$varx, "y", input$vary),
            x= input$varx,
