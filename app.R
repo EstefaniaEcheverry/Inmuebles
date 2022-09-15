@@ -27,7 +27,25 @@ library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
 
-
+palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","URBANIZACION","URB", 
+                    "EDIFICIO","EDIFICO","ED","EDF","MULTIFAMILIAR","MULTIFAMILIARES","LC",
+                    "UNIDAD","MIRADOR","LOMA","LOMAS","LOS CABOS","BALCONES","TORRES","TORRE",
+                    "SERRANA","SERRANIAS","PARQUE","PARQUES","SETAI", "ABADIA","GUAYACANES",
+                    "EL CORTIJO", "OASIS","CALASANZ", "LAS CASAS", "LOS LAURELES", "PORTONES",
+                    "SANDIEGO", "SAN DIEGO","TIERRA","PUNTA","ARBOLEDA","ROSEDAL","PORTON","MEDITERRANEA",
+                    "ALAMEDA","CEDROS","CAMINO","RECINTO","BOSQUES","BALCON","BULEVAR","LAS VEGAS","REMANSO",
+                    "CONQUISTADOR","ALTOS,","COLINAS","CORAZON","LAS ANTILLAS","CONDOMINIO","CIUDADELA","PARIS",
+                    "JACARANDAS","VILLA","AGUAS","ARRECIFES","ACUARELA","ACUARELAS","GUADUALES","RESERVA","LA   RESERVA","ENTRE", "PLAZA","LA PLAZA","CASTELLON","NUCLEO","PRADO","PRADOS","NUEVO","PARCELACION",
+                    "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO",
+                    "CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON",
+                    "AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE",
+                    "SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE",
+                    "PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA",
+                    "CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA",
+                    "NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO",
+                    "CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL",
+                    "GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA",
+                    "URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO")
 
 # Agrupación por direcciones 
 conct_catacter<- function(caracteres ){
@@ -47,26 +65,26 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Vr.Canon"          ,     "Vr.Administracion" ,     "Valor.Iva"    ,         
              "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
              "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
-             "Direcciones_c")
+             "Direcciones_c",'conjunto')
 datos_completos<-read.csv2("data_orden/inmuebles_15.csv",sep=";", header =TRUE)
+conjunto<-FALSE
+for  (i in palabras_inter){
+  conjunto<-conjunto+grepl(i , datos_completos$Direccion)
+}
+datos_completos$conjunto<-'CASA'
+datos_completos[conjunto>0,]$conjunto<-'CONJUNTO'
 filtro<-datos_completos$Admon..Inc.=='True'
 datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
 
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 
-
-#Crear el objeto de base de datos 
-#datos <- read.csv2("data/direccion_actn.csv", header= TRUE)
-#names(datos)
-#datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE)
-#direccion_unique <- read.csv2("data/direccion_uniquen.csv", header= TRUE)
-#direccion_unique_b <- read.csv2("data/direccion_bloqn.csv", header= TRUE)
 direccion_unique <- datos %>%
   group_by(Direcciones_c) %>%
   summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
              Centro_de_Costos = conct_catacter(CentroCostos),
              Ciudad = conct_catacter(Ciudad),
+             conjunto=conct_catacter(conjunto),
              Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
              Valor.prom = mean(Vr.Canon),
              Valor.promad = mean(Vr.Administracion),
@@ -78,6 +96,7 @@ direccion_unique_b <- datos_b %>%
   summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
              Centro_de_Costos = conct_catacter(CentroCostos),
              Ciudad = conct_catacter(Ciudad),
+             conjunto=conct_catacter(conjunto),
              Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
              Valor.prom = mean(Vr.Canon),
              Valor.promad = mean(Vr.Administracion),
