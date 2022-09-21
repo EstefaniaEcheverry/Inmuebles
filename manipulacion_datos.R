@@ -149,7 +149,6 @@ Direcciones_c<-c()
 for (direccion in inmuebles$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,palabras_no)[1])
 }
-
 ##################### geo codificacion ###############################3
 
 datos <- read.csv2("data_orden/inmuebles_20.csv", header= TRUE,
@@ -157,7 +156,21 @@ datos <- read.csv2("data_orden/inmuebles_20.csv", header= TRUE,
 #datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE,
                   # fileEncoding = "UTF-8")
 
+##################### add localizaciones corr  ###################################
+localizaciones_corr <- read.csv2("data/Localizaciones.corr.csv", sep=";", header= TRUE)
+
 localizaciones <- unique(read.csv2("data/localizaciones_9.csv",header=T))
+localizaciones_corr$address<-paste(localizaciones_corr$address,toupper( localizaciones_corr$CentroCostos),', Colombia',sep=' ')
+for (i in localizaciones_corr$address[-1]){
+  filtro_1<-localizaciones$address==i
+  filtro_2<-localizaciones_corr$address==i
+  print(1)
+  localizaciones[filtro_1,]$lat<-localizaciones_corr[filtro_2,]$lat
+  localizaciones[filtro_1,]$long<-localizaciones_corr[filtro_2,]$long
+
+}
+#########################Fin ############################################3333
+
 id_inmuebles<-c(datos$IdInmueble)  
 filtro<-(!is.element( inmuebles$IdInmueble,id_inmuebles ) &
            !is.element(Direcciones_c, localizaciones$address))
@@ -165,10 +178,14 @@ inmuebles$Direcciones_c <- Direcciones_c
 direcciones_nuevas<-paste (Direcciones_c,inmuebles$Ciudad, ', Colombia',sep=' ' )
 direcciones_nuevas<-data.frame(address=(direcciones_nuevas[filtro]), id=inmuebles$IdInmueble[filtro])
 localizaciones_nuevas<-geocode(direcciones_nuevas,"address", method = "arcgis" )
-
-
-write.csv2(x = rbind(unique(localizaciones_nuevas[,c(1,3,4)]),localizaciones), file = "data_orden/localizaciones.csv", 
+names(inmuebles)
+names(datos)
+############### save localizaciones ####################
+localizaciones_final<-rbind(unique(localizaciones_nuevas[,c(1,3,4)]),localizaciones_corr)
+write.csv2(x =localizaciones_final , file = "data_orden/localizaciones.csv", 
                             row.names = F, fileEncoding = "UTF-8" )
+
+
 
 
 inmuebles$localizaciones.lat<- 0
@@ -193,7 +210,6 @@ filtro_<-inmuebles$localizaciones.address==''
 for (i in inmuebles$IdInmueble[filtro_]){
   filtro1<-inmuebles$IdInmueble==i
   filtro2<-datos_completo$IdInmueble==i
-  #print(1)
   inmuebles[filtro1,]$localizaciones.lat<-(unique(datos_completo[filtro2,]$localizaciones.lat))
   inmuebles[filtro1,]$localizaciones.long<-(unique(datos_completo[filtro2,]$localizaciones.long))
   inmuebles[filtro1,]$localizaciones.address<-(unique(datos_completo[filtro2,]$localizaciones.address))
@@ -201,14 +217,6 @@ for (i in inmuebles$IdInmueble[filtro_]){
 }
 
 
-localizaciones_corr <- read.csv2("data/Localizaciones.corr.csv", sep=";", header= TRUE)
-
-
-
-  for (i in localizaciones_corr$address ){
-  inmuebles[inmuebles$Direcciones_c==i,]$localizaciones.lat<-localizaciones_corr[localizaciones_corr$address==i,]$lat
-  inmuebles[inmuebles$Direcciones_c==i,]$localizaciones.long<-localizaciones_corr[localizaciones_corr$address==i,]$long
-}
 
 write.csv2(x = inmuebles, file = "data_orden/inmuebles_21.csv", row.names = F,
            fileEncoding = "UTF-8")
