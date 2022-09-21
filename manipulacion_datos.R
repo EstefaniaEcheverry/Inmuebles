@@ -72,7 +72,7 @@ separador_def<-function(texto,palabras_eliminar,palabras_inter){
 
 #######################################################################################
 # Lectura de datos
-inmuebles <- read_excel("data_orden/BaseDatosInmueblesPortada15-09-2022.xls")
+inmuebles <- read_excel("data_orden/BaseDatosInmueblesPortada21-09-2022.xls")
 # Seleccionar solo los sectores de interes
 centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25")
 inmuebles <- inmuebles[is.element(inmuebles$CentroCostos, 
@@ -152,12 +152,12 @@ for (direccion in inmuebles$Direccion){
 
 ##################### geo codificacion ###############################3
 
-datos <- read.csv2("data_orden/inmuebles_14.csv", header= TRUE,
+datos <- read.csv2("data_orden/inmuebles_20.csv", header= TRUE,
                    fileEncoding = "UTF-8")
 #datos_b<-read.csv2("data/inmuebles_bloqn.csv", header= TRUE,
                   # fileEncoding = "UTF-8")
 
-localizaciones <- unique(read.csv2("data/localizaciones_5.csv",header=T))
+localizaciones <- unique(read.csv2("data/localizaciones_9.csv",header=T))
 id_inmuebles<-c(datos$IdInmueble)  
 filtro<-(!is.element( inmuebles$IdInmueble,id_inmuebles ) &
            !is.element(Direcciones_c, localizaciones$address))
@@ -201,6 +201,15 @@ for (i in inmuebles$IdInmueble[filtro_]){
 }
 
 
-write.csv2(x = inmuebles, file = "data_orden/inmuebles_15.csv", row.names = F,
+localizaciones_corr <- read.csv2("data/Localizaciones.corr.csv", sep=";", header= TRUE)
+
+
+
+  for (i in localizaciones_corr$address ){
+  inmuebles[inmuebles$Direcciones_c==i,]$localizaciones.lat<-localizaciones_corr[localizaciones_corr$address==i,]$lat
+  inmuebles[inmuebles$Direcciones_c==i,]$localizaciones.long<-localizaciones_corr[localizaciones_corr$address==i,]$long
+}
+
+write.csv2(x = inmuebles, file = "data_orden/inmuebles_21.csv", row.names = F,
            fileEncoding = "UTF-8")
  

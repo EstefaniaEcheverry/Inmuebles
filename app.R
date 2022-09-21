@@ -27,27 +27,6 @@ library(rgeoboundaries)
 library(shinydashboard)
 library(shinycssloaders)# to add a loader while graph is populating
 
-palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","URBANIZACION","URB", 
-                    "EDIFICIO","EDIFICO","ED","EDF","MULTIFAMILIAR","MULTIFAMILIARES","LC",
-                    "UNIDAD","MIRADOR","LOMA","LOMAS","LOS CABOS","BALCONES","TORRES","TORRE",
-                    "SERRANA","SERRANIAS","PARQUE","PARQUES","SETAI", "ABADIA","GUAYACANES",
-                    "EL CORTIJO", "OASIS","CALASANZ", "LAS CASAS", "LOS LAURELES", "PORTONES",
-                    "SANDIEGO", "SAN DIEGO","TIERRA","PUNTA","ARBOLEDA","ROSEDAL","PORTON","MEDITERRANEA",
-                    "ALAMEDA","CEDROS","CAMINO","RECINTO","BOSQUES","BALCON","BULEVAR","LAS VEGAS","REMANSO",
-                    "CONQUISTADOR","ALTOS,","COLINAS","CORAZON","LAS ANTILLAS","CONDOMINIO","CIUDADELA","PARIS",
-                    "JACARANDAS","VILLA","AGUAS","ARRECIFES","ACUARELA","ACUARELAS","GUADUALES","RESERVA","LA   RESERVA","ENTRE", "PLAZA","LA PLAZA","CASTELLON","NUCLEO","PRADO","PRADOS","NUEVO","PARCELACION",
-                    "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO",
-                    "CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON",
-                    "AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE",
-                    "SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE",
-                    "PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA",
-                    "CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA",
-                    "NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO",
-                    "CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL",
-                    "GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA",
-                    "URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO")
-
-# Agrupación por direcciones 
 conct_catacter<- function(caracteres ){
   caracteres<- unique(caracteres)
   caracteres_<-caracteres[1]  
@@ -59,23 +38,17 @@ conct_catacter<- function(caracteres ){
   }
   return(caracteres_)
 }
+
 nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"         ,   "NoCCostos"    ,
              "CentroCostos"     ,      "Ciudad"      ,          "Direccion"          ,    "palabras_apa",           "Lugar"    ,             
              "localizaciones.address" ,"localizaciones.lat" ,    "localizaciones.long" ,  
              "Vr.Canon"          ,     "Vr.Administracion" ,     "Valor.Iva"    ,         
              "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
              "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
-             "Direcciones_c",'conjunto')
-datos_completos<-read.csv2("data_orden/inmuebles_15.csv",sep=";", header =TRUE)
-conjunto<-FALSE
-for  (i in palabras_inter){
-  conjunto<-conjunto+grepl(i , datos_completos$Direccion)
-}
-datos_completos$conjunto<-'CASA'
-datos_completos[conjunto>0,]$conjunto<-'CONJUNTO'
+             "Direcciones_c")
+datos_completos<-read.csv2("data_orden/inmuebles_21.csv",sep=";", header =TRUE)
 filtro<-datos_completos$Admon..Inc.=='True'
 datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
-
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
 datos_b<-datos_completos[datos_completos$Bloqueado=='True',nombres_c]
 
@@ -84,7 +57,6 @@ direccion_unique <- datos %>%
   summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
              Centro_de_Costos = conct_catacter(CentroCostos),
              Ciudad = conct_catacter(Ciudad),
-             conjunto=conct_catacter(conjunto),
              Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
              Valor.prom = mean(Vr.Canon),
              Valor.promad = mean(Vr.Administracion),
@@ -96,7 +68,6 @@ direccion_unique_b <- datos_b %>%
   summarise( Nombre_del_Lugar = conct_catacter(Lugar),Total_de_apartamentos = n(),
              Centro_de_Costos = conct_catacter(CentroCostos),
              Ciudad = conct_catacter(Ciudad),
-             conjunto=conct_catacter(conjunto),
              Valor.min = min(Vr.Canon),Valor.max = max(Vr.Canon), 
              Valor.prom = mean(Vr.Canon),
              Valor.promad = mean(Vr.Administracion),
@@ -147,7 +118,7 @@ n1<-length(c4)
 c4=c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
- 
+  
   dashboardPage(
     skin = "blue",
     title = "Inmuebles de Portada Inmobiliaria",
@@ -215,10 +186,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5604 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 15 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5589 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1060 de estos inmuebles y Laureles 882 
+                                tags$p(" Son 5629 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 8 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5621 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1065 de estos inmuebles y Laureles 886 
                                      inmuebles. ")
                          )
                        )
@@ -293,7 +264,9 @@ ui <- fluidPage(
                                           br(),br(),
                                           fluidRow(
                                             ( DT::dataTableOutput('data_filtro_b')) )
-                                ))
+                                )),
+                       tabPanel(title='Conjuntos',
+                                fluidPage(fluidRow(DT::dataTableOutput('top_desc') )  ))
                 )
         )
       )
@@ -349,6 +322,27 @@ server <- function(input, output, session) {
     st_set_crs(value = 4326) %>%
     st_transform(crs = 3857) %>%
     st_intersection(area_metropolitana)
+  
+  output$top_desc<-DT::renderDataTable({
+    direccion_unique %>%
+      filter(direccion_unique$Nombre_del_Lugar!='' &
+               (is.null(input$var5) |
+                  is.element(direccion_unique$Centro_de_Costos, input$var5) ))%>%
+      select(c(Nombre_del_Lugar,Direcciones_c,Centro_de_Costos,Total_de_apartamentos) ) %>%
+      dplyr::arrange(desc(Total_de_apartamentos) ) 
+    
+  }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
+                    initComplete = JS(
+                      "function(settings, json) {",
+                      "$(this.api().table().header()).css({'background-color': '#3c8dbc', 'color': '#ffffff' });",
+                      "}"),
+                    columnDefs=list(list(className='dt-center',targets="_all"))
+  ),
+  filter = "top",
+  selection = 'multiple',
+  style = 'bootstrap',
+  class = 'cell-border stripe',
+  rownames = FALSE)
   
   output$map_plot<- renderTmap({
     if (is.null(input$var5) ){
@@ -438,7 +432,7 @@ server <- function(input, output, session) {
   observeEvent(input$map_plot_b_marker_click,{
     output$data_filtro_b<- DT::renderDataTable({
       click<-input$map_plot_b_marker_click
-       direccion_print_b<-direccion_unique_b[paste('X',direccion_unique_b$Indice,sep="")==click$id ,
+      direccion_print_b<-direccion_unique_b[paste('X',direccion_unique_b$Indice,sep="")==click$id ,
                                             'Direcciones_c']
       datos_print_b<- datos_b[datos_b$Direcciones_c==direccion_print_b$Direcciones_c,]  
       datos_print_b
