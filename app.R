@@ -46,7 +46,24 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
              "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
              "Direcciones_c")
-datos_completos<-read.csv2("data_orden/inmuebles_21.csv",sep=";", header =TRUE)
+#datos_completos<-read.csv2("data_orden/inmuebles_21.csv",sep=";", header =TRUE)
+datos_completos<-read.csv2("BD/inmuebles_app.csv",sep=";", header =TRUE)
+localizaciones_join<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
+localizaciones_join<-unique(localizaciones_join[,names(localizaciones_join)])
+localizaciones_join$conector<-paste(localizaciones_join$Direcciones_prueba,
+                                    localizaciones_join$Ciudad,sep=' ')
+localizaciones_join<-localizaciones_join %>%
+  group_by(conector)%>%
+  summarise(localizaciones.lat=mean(localizaciones.lat),
+            localizaciones.long=mean(localizaciones.long))
+  
+
+datos_completos$conector<-paste(datos_completos$Direcciones_prueba,
+                                datos_completos$Ciudad,sep=' ')
+datos_completos<-merge(x = datos_completos, y = localizaciones_join, 
+                       by = "conector")
+datos_completos$localizaciones.address<-datos_completos$conector
+datos_completos$Direcciones_c<-datos_completos$conector
 filtro<-datos_completos$Admon..Inc.=='True'
 datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]

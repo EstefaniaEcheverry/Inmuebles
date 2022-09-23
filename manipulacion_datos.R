@@ -160,7 +160,9 @@ datos <- read.csv2("data_orden/inmuebles_20.csv", header= TRUE,
 localizaciones_corr <- read.csv2("data/Localizaciones.corr.csv", sep=";", header= TRUE)
 
 localizaciones <- unique(read.csv2("data/localizaciones_9.csv",header=T))
-localizaciones_corr$address<-paste(localizaciones_corr$address,toupper( localizaciones_corr$CentroCostos),', Colombia',sep=' ')
+
+
+localizaciones_corr$address_1<-paste(localizaciones_corr$address,toupper( localizaciones_corr$CentroCostos),', Colombia',sep=' ')
 for (i in localizaciones_corr$address[-1]){
   filtro_1<-localizaciones$address==i
   filtro_2<-localizaciones_corr$address==i
