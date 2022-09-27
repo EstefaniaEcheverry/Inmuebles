@@ -63,7 +63,7 @@ datos_completos$conector<-paste(datos_completos$Direcciones_prueba,
 datos_completos<-merge(x = datos_completos, y = localizaciones_join, 
                        by = "conector")
 datos_completos$localizaciones.address<-datos_completos$conector
-datos_completos$Direcciones_c<-datos_completos$conector
+#datos_completos$Direcciones_c<-datos_completos$conector
 filtro<-datos_completos$Admon..Inc.=='True'
 datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
