@@ -102,13 +102,19 @@ Para esta primera parte usaremos la data de la carpeta data_orden del archivo in
 
 Estos datos se guardaran las localizaciones originales.
 
+- Direccion_c: Sin conjunto.
+- Direccion_prueba: con conjunto.
+
+Solo utilizar  cuando se cambie la estructura de direcciones. 
+
+
 ```{r creacion localizaciones}
-datos_completos<-read.csv2("data_orden/inmuebles_23.csv",sep=";", header =TRUE)
+datos_completos<-read.csv2("data_orden/inmuebles_22.csv",sep=";", header =TRUE)
 Direcciones_c<-c()
 for (direccion in datos_completos$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_eliminar,palabras_inter) )[1])
 }
-datos_completos$Direcciones_c<-str_trim(Direcciones_c)
+datos_completos$Direcciones_c<-str_trim(gsub("  "," ",Direcciones_c) )
 datos_completos$Direcciones_prueba<-paste(datos_completos$Direcciones_c,
                                           str_trim(datos_completos$Lugar), sep=' ' ) 
 localizaciones<-datos_completos[,c("Direcciones_c","Direcciones_prueba","Ciudad","localizaciones.lat",
@@ -166,6 +172,7 @@ En esta parte se modifica información de los contratos con información erronea
 ```{r, Correcciones manuales}
 inmuebles[inmuebles$IdInmueble== 11719, 'Ciudad'] <- "MEDELLIN"
 #inmuebles[inmuebles$IdInmueble== 11703, 'Direccion' ]<-
+
 ```
 
 ## Geocodificación
@@ -208,12 +215,12 @@ Direcciones_c<-c()
 for (direccion in inmuebles$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_inter,palabras_eliminar))[1])
 }
-inmuebles$Direcciones_c <- str_trim(Direcciones_c)
+inmuebles$Direcciones_c <- str_trim(gsub("  "," " ,Direcciones_c) )
 inmuebles$Direcciones_prueba<-paste(inmuebles$Direcciones_c,
                                           str_trim(inmuebles$Lugar), sep=' ' ) 
 localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
-address_nuevas<-paste(inmuebles$Direcciones_c, inmuebles$Ciudad,'Colombia',sep=', ' ) 
-address_actuales<-paste(localizaciones$Direcciones_c,localizaciones$Ciudad,'Colombia',sep = ', ' )
+address_nuevas<-paste(inmuebles$Direcciones_prueba, inmuebles$Ciudad,'Colombia',sep=', ' ) 
+address_actuales<-paste(localizaciones$Direcciones_prueba,localizaciones$Ciudad,'Colombia',sep = ', ' )
 filtro<-!is.element(address_nuevas,address_actuales)
 direcciones_nuevas<-inmuebles[filtro,c('Direcciones_c','Direcciones_prueba','Ciudad' )]
 localizaciones_nuevas<- geocode(data.frame(X= address_nuevas[filtro]),'X',  method = "arcgis" )

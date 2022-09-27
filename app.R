@@ -61,9 +61,9 @@ localizaciones_join<-localizaciones_join %>%
 datos_completos$conector<-paste(datos_completos$Direcciones_prueba,
                                 datos_completos$Ciudad,sep=' ')
 datos_completos<-merge(x = datos_completos, y = localizaciones_join, 
-                       by = "conector",all.x = FALSE)
+                       by = "conector")
 datos_completos$localizaciones.address<-datos_completos$conector
-datos_completos$Direcciones_c<-datos_completos$conector
+#datos_completos$Direcciones_c<-datos_completos$conector
 filtro<-datos_completos$Admon..Inc.=='True'
 datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
 datos<-datos_completos[datos_completos$Bloqueado=='False',nombres_c]
@@ -1094,4 +1094,3 @@ server <- function(input, output, session) {
 
 #Definición de la aplicación
 shinyApp(ui = ui, server = server)
-
