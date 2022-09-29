@@ -244,8 +244,7 @@ En proceso
 file_corr<-'data/Localizaciones.corr.csv'
 localizaciones_corr<-read.csv2(file_corr, header = T)
 localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
-localizaciones_corr$addres_temp<-paste(strtrim(localizaciones_corr$address),
-                                    toupper(localizaciones_corr$Ciudad),sep=' ')
+localizaciones_corr$addres_temp<-paste(str_trim(localizaciones_corr$address),toupper(localizaciones_corr$Ciudad),sep=' ')
 addres_corr<-paste(localizaciones$Direcciones_c, localizaciones$Ciudad,sep=' ')
 contar<-1
 for (i in localizaciones_corr$addres_temp){
@@ -260,6 +259,8 @@ for (i in localizaciones_corr$addres_temp){
   }
   contar<-contar+1
 }
+
+write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 
 ```
 
