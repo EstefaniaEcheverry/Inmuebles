@@ -241,6 +241,7 @@ write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEnco
 En proceso
 
 ```{r}
+
 file_corr<-'data/Localizaciones.corr.csv'
 localizaciones_corr<-read.csv2(file_corr, header = T)
 localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
