@@ -1,0 +1,11 @@
+---
+title: "Informe Global Arriendos"
+author: "Estefania Echeverry Franco"
+date: '2022-09-16'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+

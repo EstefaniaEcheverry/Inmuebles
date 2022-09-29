@@ -46,7 +46,7 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Propietario"     ,       "P.Cedula"  ,             "Arrendatario"   ,       
              "A.Cedula"    ,           "Aseguradora"     ,       "NoSolicitud",           
              "Direcciones_c")
-#datos_completos<-read.csv2("data_orden/inmuebles_21.csv",sep=";", header =TRUE)
+#datos_completos<-read.csv2("data_orden/inmuebles_23.csv",sep=";", header =TRUE)
 datos_completos<-read.csv2("BD/inmuebles_app.csv",sep=";", header =TRUE)
 localizaciones_join<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
 localizaciones_join<-unique(localizaciones_join[,names(localizaciones_join)])
@@ -203,10 +203,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5641 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 5 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5636 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1068 de estos inmuebles y Laureles 884 
+                                tags$p(" Son 5675 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 177 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5498 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1038 de estos inmuebles y Laureles 850 
                                      inmuebles. ")
                          )
                        )
@@ -664,7 +664,7 @@ server <- function(input, output, session) {
         
         geom_bar(width = 0.9, stat="identity")+  
         
-        ylim(c(0,1100))+
+        ylim(c(0,1150))+
         labs(x="Centros de costos" , y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
@@ -691,7 +691,7 @@ server <- function(input, output, session) {
                                           fill=CentroCostos,label=Vr.Canon )) +
         geom_bar(width = 0.9, stat="identity")+  
         
-        ylim(c(0,22))+
+        ylim(c(0,10))+
         labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
@@ -756,7 +756,7 @@ server <- function(input, output, session) {
         geom_bar( stat="identity"              
         )+  
         
-        ylim(c(0,3000))+
+        ylim(c(0,3050))+
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
@@ -781,7 +781,7 @@ server <- function(input, output, session) {
         geom_bar( stat="identity"              
         )+  
         
-        ylim(c(0,55))+
+        ylim(c(0,10))+
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
@@ -855,7 +855,7 @@ server <- function(input, output, session) {
       # Gráfica de Aseguradora
       p9 <- tabla_aseg1 %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora,label=Vr.Canon )) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
-        ylim(c(0,80))+
+        ylim(c(0,10))+
         labs(x="Aseguradoras", y= "Frecuencia",title= "Diagrama de barras para la variable Aseguradora") +   
         labs(fill = "")+                                         
         
