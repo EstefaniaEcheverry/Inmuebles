@@ -109,7 +109,7 @@ Solo utilizar  cuando se cambie la estructura de direcciones.
 
 
 ```{r creacion localizaciones}
-datos_completos<-read.csv2("data_orden/inmuebles_22.csv",sep=";", header =TRUE)
+datos_completos<-read.csv2("data_orden/inmuebles_23.csv",sep=";", header =TRUE)
 Direcciones_c<-c()
 for (direccion in datos_completos$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_eliminar,palabras_inter) )[1])
@@ -135,7 +135,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada27-09-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada30-09-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
