@@ -19,7 +19,8 @@ Sabaneta <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 
 Estrella <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 6)
 Envigado <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 7)
 Bello <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 10)
-Global_Sedes <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 8)
-No_se <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 9)
+No_se <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 8)
+No_se_1 <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 9)
+Global_Sedes <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 11)
 ```
 

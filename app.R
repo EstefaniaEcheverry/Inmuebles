@@ -48,7 +48,7 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Direcciones_c")
 #datos_completos<-read.csv2("data_orden/inmuebles_23.csv",sep=";", header =TRUE)
 datos_completos<-read.csv2("BD/inmuebles_app.csv",sep=";", header =TRUE)
-localizaciones_join<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
+localizaciones_join<-read.csv2("BD/localizacion_inmuebles.csv",header=TRUE)
 localizaciones_join<-unique(localizaciones_join[,names(localizaciones_join)])
 localizaciones_join$conector<-paste(localizaciones_join$Direcciones_prueba,
                                     localizaciones_join$Ciudad,sep=' ')
@@ -203,10 +203,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5655 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 2 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5652 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1072 de estos inmuebles y Laureles 883 
+                                tags$p(" Son 5686 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 113 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5573 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1054 de estos inmuebles y Laureles 868 
                                      inmuebles. ")
                          )
                        )
@@ -301,7 +301,7 @@ server <- function(input, output, session) {
   # Crear mapa con geoboundaries escogiendo solo los municipios
   
   area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
-    filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
+    dplyr::filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
                                   "BELLO",    # estan en mayuscula y no estan
                                   "COPACABANA",# en UTF-8 
                                   "ENVIGADO",
@@ -342,7 +342,7 @@ server <- function(input, output, session) {
   
   output$top_desc<-DT::renderDataTable({
     direccion_unique %>%
-      filter(direccion_unique$Nombre_del_Lugar!='' &
+      dplyr::filter(direccion_unique$Nombre_del_Lugar!='' &
                (is.null(input$var5) |
                   is.element(direccion_unique$Centro_de_Costos, input$var5) ))%>%
       select(c(Nombre_del_Lugar,Direcciones_c,Centro_de_Costos,Total_de_apartamentos) ) %>%
@@ -691,7 +691,7 @@ server <- function(input, output, session) {
                                           fill=CentroCostos,label=Vr.Canon )) +
         geom_bar(width = 0.9, stat="identity")+  
         
-        ylim(c(0,10))+
+        ylim(c(0,25))+
         labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
@@ -781,7 +781,7 @@ server <- function(input, output, session) {
         geom_bar( stat="identity"              
         )+  
         
-        ylim(c(0,10))+
+        ylim(c(0,60))+
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
@@ -855,7 +855,7 @@ server <- function(input, output, session) {
       # Gráfica de Aseguradora
       p9 <- tabla_aseg1 %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora,label=Vr.Canon )) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
-        ylim(c(0,10))+
+        ylim(c(0,100))+
         labs(x="Aseguradoras", y= "Frecuencia",title= "Diagrama de barras para la variable Aseguradora") +   
         labs(fill = "")+                                         
         
@@ -1088,9 +1088,6 @@ server <- function(input, output, session) {
   
   
 }
-
-#Configuración tematica de los gráficos al estilo de la aplicación
-#thematic_shiny()
 
 #Definición de la aplicación
 shinyApp(ui = ui, server = server)
