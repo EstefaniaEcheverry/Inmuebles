@@ -29,7 +29,8 @@ palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","
                     "JACARANDAS","VILLA","AGUAS","ARRECIFES","ACUARELA","ACUARELAS","GUADUALES","RESERVA","LA   RESERVA","ENTRE", "PLAZA","LA PLAZA","CASTELLON","NUCLEO","PRADO","PRADOS","NUEVO","PARCELACION",
                     "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO","CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON","AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE","SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE","PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA","CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA","NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO","CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL","GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA","URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO", "OLIVENZA")
 # Palabras a eliminar de las direcciones 
-palabras_eliminar <- c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA")
+palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA","PH",
+                       "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1")
 ```
 
 # Funciones de 
@@ -115,8 +116,19 @@ for (direccion in datos_completos$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_eliminar,palabras_inter) )[1])
 }
 datos_completos$Direcciones_c<-str_trim(gsub("  "," ",Direcciones_c) )
+
+direcciones <- c()
+palabras_apa<-c()
+for (direccion in datos_completos$Direccion){
+  palabrastemp<-separador_def(direccion,
+                              palabras_inter,
+                              palabras_eliminar)
+  direcciones<-c(direcciones,palabrastemp[1])
+  palabras_apa<-c(palabras_apa,palabrastemp[2])
+}
 datos_completos$Direcciones_prueba<-paste(datos_completos$Direcciones_c,
                                           str_trim(datos_completos$Lugar), sep=' ' ) 
+datos_completos$Lugar <- palabras_apa
 localizaciones<-datos_completos[,c("Direcciones_c","Direcciones_prueba","Ciudad","localizaciones.lat",
                                   "localizaciones.long"   )]
 ############################
@@ -236,6 +248,16 @@ write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEnco
 
 
 # Remplazando geocodificaciones
+
+```{r}
+localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
+filtro_prueba<- localizaciones$localizaciones.lat==6.34034 & localizaciones$localizaciones.long==-75.55916
+addres_new<-paste(localizaciones[filtro_prueba,]$Direcciones_prueba,localizaciones[filtro_prueba,]$Ciudad,'Colombia',sep=',')
+localizaciones_mod<- geocode(data.frame(X= addres_new),'X',  method = "arcgis" )
+localizaciones[filtro_prueba,]$localizaciones.lat<-localizaciones_mod$lat
+localizaciones[filtro_prueba,]$localizaciones.long<-localizaciones_mod$long
+write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
+```
 
 
 En proceso
