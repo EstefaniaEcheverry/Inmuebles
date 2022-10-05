@@ -7,11 +7,41 @@ date: "2022-09-22"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 #librerias 
+library(rgeoboundaries)
 library(readxl) # leer archivos xls
 library(stringr) # manipulacion direcciones
 library(tidygeocoder) # geocodificacion de direcciones
+library(sf)
+mapa_inmuebles <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
+    dplyr::filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
+                                  "BELLO",    # estan en mayuscula y no estan
+                                  "COPACABANA",# en UTF-8 
+                                  "ENVIGADO",
+                                  "CALDAS", # hay dos caldas en colombia
+                                  "ITAGÃœÃ", # itagui
+                                  "LA ESTRELLA", 
+                                  "SABANETA",
+                                  "SAN JERÃ“NIMO",
+                                  "BOGOTÃ, D.C."
+    ) ) 
+    ) %>%
+    st_transform(crs = 3857)
+  # Cambiandoles los nombres por como se escribe
+mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia        
+                                  "ENVIGADO",
+                                  "ITAGUI",
+                                  "CALDAS",
+                                  "SAN JERONIMO",
+                                  "BOGOTA",
+                                  "MEDELLIN",
+                                  "COPACABANA",
+                                  "BELLO",
+                                  "SABANETA",
+                                  "LA ESTRELLA"  
+  )
 ```
 # Palabras
+
 
 Son las palabras internas que representan conjuntos y palabras que representan un codigo relacionado al conjunto.
 
@@ -30,7 +60,7 @@ palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","
                     "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO","CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON","AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE","SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE","PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA","CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA","NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO","CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL","GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA","URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO", "OLIVENZA")
 # Palabras a eliminar de las direcciones 
 palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA","PH",
-                       "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1")
+                       "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1", "CON", "ET", "COL","GUAYA")
 ```
 
 # Funciones de 
@@ -95,6 +125,31 @@ separador_def<-function(texto,palabras_eliminar,palabras_inter){
   texto_separado_<-str_replace_all(str_c(texto_separado,collapse = ""),"  "," ") 
   return(c(texto_final_,texto_separado_)) 
 }
+geocode_metodos<-function(bd_localizacion,metodo_geocode,direccion_ ){
+
+  localizaciones_sf<- bd_localizacion %>% # transformando a sf
+      st_as_sf(coords = c('localizaciones.long', 'localizaciones.lat')) %>%
+    st_set_crs(value = 4326) %>%
+    st_transform(crs = 3857) %>%
+    st_intersection(mapa_inmuebles) # intersectando  
+interseccion_1<-table(localizaciones_sf$shapeName,localizaciones_sf$Ciudad_temp )
+print(interseccion_1)
+print(paste("Hay ",as.character(sum(diag(interseccion_1))) ," direcciones que corresponden a su ciudad de ", as.character( nrow(bd_localizacion))   ) )
+id_fuera<-bd_localizacion[!is.element(bd_localizacion$id,localizaciones_sf$id),'id'] # id fuera del mapa
+id_no_ciudad<-localizaciones_sf[localizaciones_sf$Ciudad_temp!=localizaciones_sf$shapeName,'id']$id # id no coindice ciudad
+filtro_temp<-is.element(bd_localizacion$id,c(id_fuera,id_no_ciudad) ) # filtro temporarl
+
+localizaciones_mal<-bd_localizacion[filtro_temp,] # localizaciones mal 
+
+############################geocode arcgis con conjunto ###########################3 
+localizaciones_mal$direccion_cor<-paste(localizaciones_mal[,direccion_],localizaciones_mal$Ciudad,"Colombia",sep=',')
+geocode_intento1<-geocode(localizaciones_mal, "direccion_cor", method= metodo_geocode )
+
+filtro_na<-is.na(geocode_intento1$lat) | is.na(geocode_intento1$long)
+bd_localizacion[filtro_temp,]$localizaciones.lat[!filtro_na]<-geocode_intento1$lat[!filtro_na]
+bd_localizacion[filtro_temp,]$localizaciones.long[!filtro_na]<-geocode_intento1$long[!filtro_na]  
+return(bd_localizacion)  
+}
 ```
 
 # Creación de localizaciones.
@@ -130,10 +185,42 @@ for (direccion in datos_completos$Direccion){
 datos_completos$Direcciones_prueba<-paste(datos_completos$Direcciones_c,
                                           str_trim(datos_completos$Lugar), sep=' ' ) 
 datos_completos$Lugar <- palabras_apa
+```
+
+
+```{r creacion localizaciones}
 localizaciones<-datos_completos[,c("Direcciones_c","Direcciones_prueba","Ciudad","localizaciones.lat",
                                   "localizaciones.long"   )]
 ############################
+localizaciones$Ciudad_temp<-localizaciones$Ciudad
+localizaciones$Ciudad_temp[localizaciones$Ciudad=="SAN ANTONIO DE PRADO"]<-"MEDELLIN"
+############################### unicos ###########################3
+localizaciones<-unique(localizaciones)
+############################### identificador #################################
+localizaciones$id<-1:nrow(localizaciones)
+################################ paso uno ##############################################
+
+
+
+localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_prueba")
+localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_prueba")
+localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
+
+localizaciones_sf<- localizaciones %>% # transformando a sf
+      st_as_sf(coords = c('localizaciones.long', 'localizaciones.lat')) %>%
+    st_set_crs(value = 4326) %>%
+    st_transform(crs = 3857) %>%
+    st_intersection(mapa_inmuebles) # intersectando  
+interseccion_1<-table(localizaciones_sf$shapeName,localizaciones_sf$Ciudad_temp )
+print(interseccion_1)
+id_fuera<-localizaciones[!is.element(localizaciones$id,localizaciones_sf$id),'id'] # id fuera del mapa
+print(sum(id_fuera))
+localizaciones<-localizaciones[,names(localizaciones)[1:5]]
 write.csv2(x = unique(localizaciones), file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
+
 ```
 
 # Actualizacion de datos
@@ -148,7 +235,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada30-09-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada04-10-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
@@ -192,7 +279,7 @@ inmuebles[inmuebles$IdInmueble== 11719, 'Ciudad'] <- "MEDELLIN"
 
 
 ```{r}
-#aquí :)
+
 ## Modificacion de direcciones
 
 # direccion y nombre apartamento
@@ -232,21 +319,47 @@ inmuebles$Direcciones_c<-str_trim(gsub("-"," ",Direcciones_c) )
 inmuebles$Direcciones_c <- str_trim(gsub("  "," " ,Direcciones_c) )
 inmuebles$Direcciones_prueba<-paste(inmuebles$Direcciones_c,
                                           str_trim(inmuebles$Lugar), sep=' ' ) 
-#localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
+localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
 address_nuevas<-paste(inmuebles$Direcciones_prueba, inmuebles$Ciudad,'Colombia',sep=', ' ) 
-#address_actuales<-paste(localizaciones$Direcciones_prueba,localizaciones$Ciudad,'Colombia',sep = ', ' )
-#filtro<-!is.element(address_nuevas,address_actuales)
-filtro<- rep(TRUE, nrow(inmuebles))
+address_actuales<-paste(localizaciones$Direcciones_prueba,localizaciones$Ciudad,'Colombia',sep = ', ' )
+filtro<-!is.element(address_nuevas,address_actuales)
+
 direcciones_nuevas<-inmuebles[filtro,c('Direcciones_c','Direcciones_prueba','Ciudad' )]
-localizaciones_nuevas<- geocode(data.frame(X= address_nuevas[filtro]),'X',  method = "arcgis" )
+direcciones_nuevas$localizaciones.lat<-0
+direcciones_nuevas$localizaciones.long<-0
+localizaciones<-rbind(localizaciones, direcciones_nuevas)
+############################
+localizaciones$Ciudad_temp<-localizaciones$Ciudad
+localizaciones$Ciudad_temp[localizaciones$Ciudad=="SAN ANTONIO DE PRADO"]<-"MEDELLIN"
+############################### unicos ###########################3
+localizaciones<-unique(localizaciones)
+############################### identificador #################################
+localizaciones$id<-1:nrow(localizaciones)
+################################ paso uno ##############################################
 
-direcciones_nuevas$localizaciones.lat<-localizaciones_nuevas$lat
-direcciones_nuevas$localizaciones.long<-localizaciones_nuevas$long
-#direcciones_nuevas<-rbind(direcciones_nuevas, localizaciones)
+localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_prueba")
+localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_prueba")
+localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
 
-write.csv2(x = unique(direcciones_nuevas), file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
+localizaciones_sf<- localizaciones %>% # transformando a sf
+      st_as_sf(coords = c('localizaciones.long', 'localizaciones.lat')) %>%
+    st_set_crs(value = 4326) %>%
+    st_transform(crs = 3857) %>%
+    st_intersection(mapa_inmuebles) # intersectando  
+interseccion_1<-table(localizaciones_sf$shapeName,localizaciones_sf$Ciudad_temp )
+print(interseccion_1)
+id_fuera<-localizaciones[!is.element(localizaciones$id,localizaciones_sf$id),'id'] # id fuera del mapa
+print(sum(id_fuera))
+localizaciones<-localizaciones[,names(localizaciones)[1:5]]
+write.csv2(x = unique(localizaciones), file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
+
 write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEncoding = "UTF-8")
-
+```
+```{r}
+z<-as.data.frame( localizaciones_sf[localizaciones_sf$shapeName!=localizaciones_sf$Ciudad_temp,])
 ```
 
 
@@ -254,8 +367,9 @@ write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEnco
 
 ```{r}
 localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
-filtro_prueba<- localizaciones$localizaciones.lat==6.34034 & localizaciones$localizaciones.long==-75.55916
+filtro_prueba<- localizaciones[localizaciones$localizaciones.lat == 6.34034 & localizaciones$localizaciones.long== -75.55916,]
 addres_new<-paste(localizaciones[filtro_prueba,]$Direcciones_prueba,localizaciones[filtro_prueba,]$Ciudad,'Colombia',sep=',')
+sum(filtro_prueba)
 localizaciones_mod<- geocode(data.frame(X= addres_new),'X',  method = "arcgis" )
 localizaciones[filtro_prueba,]$localizaciones.lat<-localizaciones_mod$lat
 localizaciones[filtro_prueba,]$localizaciones.long<-localizaciones_mod$long
@@ -289,4 +403,3 @@ for (i in localizaciones_corr$addres_temp){
 write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 
 ```
-
