@@ -40,8 +40,9 @@ mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia
                                   "LA ESTRELLA"  
   )
 ```
-# Palabras
 
+
+# Palabras del Conjunto 
 
 Son las palabras internas que representan conjuntos y palabras que representan un codigo relacionado al conjunto.
 
@@ -63,7 +64,7 @@ palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA"
                        "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1", "CON", "ET", "COL","GUAYA")
 ```
 
-# Funciones de 
+# Funciones de manipulaciond e texto
 
 ```{r funciones manipulacion de texto}
 separador<-function(texto,palabras){
