@@ -64,7 +64,7 @@ palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA"
                        "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1", "CON", "ET", "COL","GUAYA")
 ```
 
-# Funciones de manipulaciond e texto
+# Funciones de manipulacion de texto
 
 ```{r funciones manipulacion de texto}
 separador<-function(texto,palabras){
@@ -190,8 +190,7 @@ datos_completos$Lugar <- palabras_apa
 
 
 ```{r creacion localizaciones}
-localizaciones<-datos_completos[,c("Direcciones_c","Direcciones_prueba","Ciudad","localizaciones.lat",
-                                  "localizaciones.long"   )]
+localizaciones<-datos_completos[,c("Direcciones_c","Direcciones_prueba","Ciudad","localizaciones.lat", "localizaciones.long"   )]
 ############################
 localizaciones$Ciudad_temp<-localizaciones$Ciudad
 localizaciones$Ciudad_temp[localizaciones$Ciudad=="SAN ANTONIO DE PRADO"]<-"MEDELLIN"
@@ -207,7 +206,7 @@ localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_c")
 localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_c")
-localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
 
 localizaciones_sf<- localizaciones %>% # transformando a sf
@@ -342,7 +341,7 @@ localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_c")
 localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_c")
-localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
+localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
 
 localizaciones_sf<- localizaciones %>% # transformando a sf
