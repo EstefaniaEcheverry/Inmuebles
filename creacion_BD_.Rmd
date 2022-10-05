@@ -30,7 +30,7 @@ palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","
                     "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO","CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON","AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE","SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE","PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA","CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA","NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO","CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL","GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA","URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO", "OLIVENZA")
 # Palabras a eliminar de las direcciones 
 palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA","PH",
-                       "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1")
+                       "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1", "CON", "ET", "COL","GUAYA")
 ```
 
 # Funciones de 
@@ -115,6 +115,7 @@ Direcciones_c<-c()
 for (direccion in datos_completos$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_eliminar,palabras_inter) )[1])
 }
+datos_completos$Direcciones_c<-str_trim(gsub("-"," ",Direcciones_c) )
 datos_completos$Direcciones_c<-str_trim(gsub("  "," ",Direcciones_c) )
 
 direcciones <- c()
@@ -147,7 +148,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada30-09-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada04-10-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
@@ -191,7 +192,6 @@ inmuebles[inmuebles$IdInmueble== 11719, 'Ciudad'] <- "MEDELLIN"
 
 
 ```{r}
-
 ## Modificacion de direcciones
 
 # direccion y nombre apartamento
@@ -227,19 +227,21 @@ Direcciones_c<-c()
 for (direccion in inmuebles$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_inter,palabras_eliminar))[1])
 }
+inmuebles$Direcciones_c<-str_trim(gsub("-"," ",Direcciones_c) )
 inmuebles$Direcciones_c <- str_trim(gsub("  "," " ,Direcciones_c) )
 inmuebles$Direcciones_prueba<-paste(inmuebles$Direcciones_c,
                                           str_trim(inmuebles$Lugar), sep=' ' ) 
-localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
+#localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
 address_nuevas<-paste(inmuebles$Direcciones_prueba, inmuebles$Ciudad,'Colombia',sep=', ' ) 
-address_actuales<-paste(localizaciones$Direcciones_prueba,localizaciones$Ciudad,'Colombia',sep = ', ' )
-filtro<-!is.element(address_nuevas,address_actuales)
+#address_actuales<-paste(localizaciones$Direcciones_prueba,localizaciones$Ciudad,'Colombia',sep = ', ' )
+#filtro<-!is.element(address_nuevas,address_actuales)
+filtro<- rep(TRUE, nrow(inmuebles))
 direcciones_nuevas<-inmuebles[filtro,c('Direcciones_c','Direcciones_prueba','Ciudad' )]
 localizaciones_nuevas<- geocode(data.frame(X= address_nuevas[filtro]),'X',  method = "arcgis" )
 
 direcciones_nuevas$localizaciones.lat<-localizaciones_nuevas$lat
 direcciones_nuevas$localizaciones.long<-localizaciones_nuevas$long
-direcciones_nuevas<-rbind(direcciones_nuevas, localizaciones)
+#direcciones_nuevas<-rbind(direcciones_nuevas, localizaciones)
 
 write.csv2(x = unique(direcciones_nuevas), file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEncoding = "UTF-8")
@@ -251,8 +253,9 @@ write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEnco
 
 ```{r}
 localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
-filtro_prueba<- localizaciones$localizaciones.lat==6.34034 & localizaciones$localizaciones.long==-75.55916
+filtro_prueba<- localizaciones[localizaciones$localizaciones.lat == 6.34034 & localizaciones$localizaciones.long== -75.55916,]
 addres_new<-paste(localizaciones[filtro_prueba,]$Direcciones_prueba,localizaciones[filtro_prueba,]$Ciudad,'Colombia',sep=',')
+sum(filtro_prueba)
 localizaciones_mod<- geocode(data.frame(X= addres_new),'X',  method = "arcgis" )
 localizaciones[filtro_prueba,]$localizaciones.lat<-localizaciones_mod$lat
 localizaciones[filtro_prueba,]$localizaciones.long<-localizaciones_mod$long
@@ -286,4 +289,3 @@ for (i in localizaciones_corr$addres_temp){
 write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 
 ```
-
