@@ -115,6 +115,7 @@ Direcciones_c<-c()
 for (direccion in datos_completos$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_eliminar,palabras_inter) )[1])
 }
+datos_completos$Direcciones_c<-str_trim(gsub("-"," ",Direcciones_c) )
 datos_completos$Direcciones_c<-str_trim(gsub("  "," ",Direcciones_c) )
 
 direcciones <- c()
@@ -191,7 +192,7 @@ inmuebles[inmuebles$IdInmueble== 11719, 'Ciudad'] <- "MEDELLIN"
 
 
 ```{r}
-
+#aquí :)
 ## Modificacion de direcciones
 
 # direccion y nombre apartamento
@@ -227,19 +228,21 @@ Direcciones_c<-c()
 for (direccion in inmuebles$Direccion){
   Direcciones_c<-c(Direcciones_c,separador(direccion,c(palabras_inter,palabras_eliminar))[1])
 }
+inmuebles$Direcciones_c<-str_trim(gsub("-"," ",Direcciones_c) )
 inmuebles$Direcciones_c <- str_trim(gsub("  "," " ,Direcciones_c) )
 inmuebles$Direcciones_prueba<-paste(inmuebles$Direcciones_c,
                                           str_trim(inmuebles$Lugar), sep=' ' ) 
-localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
+#localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
 address_nuevas<-paste(inmuebles$Direcciones_prueba, inmuebles$Ciudad,'Colombia',sep=', ' ) 
-address_actuales<-paste(localizaciones$Direcciones_prueba,localizaciones$Ciudad,'Colombia',sep = ', ' )
-filtro<-!is.element(address_nuevas,address_actuales)
+#address_actuales<-paste(localizaciones$Direcciones_prueba,localizaciones$Ciudad,'Colombia',sep = ', ' )
+#filtro<-!is.element(address_nuevas,address_actuales)
+filtro<- rep(TRUE, nrow(inmuebles))
 direcciones_nuevas<-inmuebles[filtro,c('Direcciones_c','Direcciones_prueba','Ciudad' )]
 localizaciones_nuevas<- geocode(data.frame(X= address_nuevas[filtro]),'X',  method = "arcgis" )
 
 direcciones_nuevas$localizaciones.lat<-localizaciones_nuevas$lat
 direcciones_nuevas$localizaciones.long<-localizaciones_nuevas$long
-direcciones_nuevas<-rbind(direcciones_nuevas, localizaciones)
+#direcciones_nuevas<-rbind(direcciones_nuevas, localizaciones)
 
 write.csv2(x = unique(direcciones_nuevas), file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEncoding = "UTF-8")
