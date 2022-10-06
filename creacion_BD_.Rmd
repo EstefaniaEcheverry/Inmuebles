@@ -360,6 +360,7 @@ write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEnco
 ```
 ```{r}
 z<-as.data.frame( localizaciones_sf[localizaciones_sf$shapeName!=localizaciones_sf$Ciudad_temp,])
+
 ```
 
 
