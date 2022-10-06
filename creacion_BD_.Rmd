@@ -67,6 +67,8 @@ palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA"
                        "VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1", "CON", "ET", "COL","GUAYA")
 ```
 
+
+
 # Funciones de manipulacion de texto
 
 ```{r funciones manipulacion de texto}
@@ -85,6 +87,7 @@ separador<-function(texto,palabras){
 separador_def<-function(texto,palabras_eliminar,palabras_inter){
   palabras_inter<- paste(" ",palabras_inter," ",sep="")
   palabras_eliminar<-paste(" ",palabras_eliminar," ",sep="")
+  texto<-paste(texto," ", sep="" )
   for (palabra in c(palabras_inter,palabras_eliminar) ){
     vector_new<-c() 
     vector<-strsplit(texto,palabra ) # seperar vector por palabra
@@ -127,7 +130,7 @@ separador_def<-function(texto,palabras_eliminar,palabras_inter){
   }
   texto_final_<-str_replace_all(str_c(texto_final,collapse = ""),"  "," ") 
   texto_separado_<-str_replace_all(str_c(texto_separado,collapse = ""),"  "," ") 
-  return(c(texto_final_,texto_separado_)) 
+  return(c( str_trim(texto_final_),texto_separado_)) 
 }
 geocode_metodos<-function(bd_localizacion,metodo_geocode,direccion_ ){
 
@@ -149,7 +152,7 @@ localizaciones_mal<-bd_localizacion[filtro_temp,] # localizaciones mal
 
 ############################geocode arcgis con conjunto ###########################3 
 localizaciones_mal$direccion_cor<-paste(localizaciones_mal[,direccion_],localizaciones_mal$Ciudad,"Colombia",sep=',')
-geocode_intento1<-geocode(localizaciones_mal, "direccion_cor", method= metodo_geocode )
+geocode_intento1<-geocode(.tbl=localizaciones_mal,address =  "direccion_cor", method= metodo_geocode )
 
 filtro_na<-is.na(geocode_intento1$lat) | is.na(geocode_intento1$long)
 bd_localizacion[filtro_temp,]$localizaciones.lat[!filtro_na]<-geocode_intento1$lat[!filtro_na]
@@ -363,6 +366,7 @@ write.csv2(x = inmuebles, file = "BD/inmuebles_app.csv", row.names = F, fileEnco
 ```
 ```{r}
 z<-as.data.frame( localizaciones_sf[localizaciones_sf$shapeName!=localizaciones_sf$Ciudad_temp,])
+
 ```
 
 
