@@ -22,22 +22,25 @@ mapa_inmuebles <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
                                   "LA ESTRELLA", 
                                   "SABANETA",
                                   "SAN JERÃ“NIMO",
+                                  "RIONEGRO",
                                   "BOGOTÃ, D.C."
     ) ) 
     ) %>%
     st_transform(crs = 3857)
   # Cambiandoles los nombres por como se escribe
-mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia        
+mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia
+                                  "RIONEGRO_NO",
                                   "ENVIGADO",
                                   "ITAGUI",
                                   "CALDAS",
                                   "SAN JERONIMO",
+                                  "RIONEGRO" ,
                                   "BOGOTA",
                                   "MEDELLIN",
                                   "COPACABANA",
                                   "BELLO",
                                   "SABANETA",
-                                  "LA ESTRELLA"  
+                                  "LA ESTRELLA"
   )
 ```
 
@@ -137,9 +140,11 @@ interseccion_1<-table(localizaciones_sf$shapeName,localizaciones_sf$Ciudad_temp 
 print(interseccion_1)
 print(paste("Hay ",as.character(sum(diag(interseccion_1))) ," direcciones que corresponden a su ciudad de ", as.character( nrow(bd_localizacion))   ) )
 id_fuera<-bd_localizacion[!is.element(bd_localizacion$id,localizaciones_sf$id),'id'] # id fuera del mapa
+print(sum(id_fuera))
 id_no_ciudad<-localizaciones_sf[localizaciones_sf$Ciudad_temp!=localizaciones_sf$shapeName,'id']$id # id no coindice ciudad
+print(sum(id_no_ciudad))
 filtro_temp<-is.element(bd_localizacion$id,c(id_fuera,id_no_ciudad) ) # filtro temporarl
-
+print(sum(filtro_temp))
 localizaciones_mal<-bd_localizacion[filtro_temp,] # localizaciones mal 
 
 ############################geocode arcgis con conjunto ###########################3 
@@ -200,8 +205,6 @@ localizaciones<-unique(localizaciones)
 localizaciones$id<-1:nrow(localizaciones)
 ################################ paso uno ##############################################
 
-
-
 localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_c")
 localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_prueba")
@@ -239,7 +242,7 @@ file_actual<-"data_orden/BaseDatosInmueblesPortada04-10-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
-centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25")
+centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25","26")
 inmuebles <- inmuebles[is.element(inmuebles$CentroCostos, 
                                          centro_costos_codigo ), ]
 
@@ -248,7 +251,7 @@ centro_costos_nombres<- c("Laureles","Sabaneta","Poblado",
                           "Colores","Envigado","Itagui",
                           "Centro","Bello","La estrella", 
                           "San Antonio Pr." , "Calasanz",
-                          "Fontibon")
+                          "Fontibon","Rionegro")
 inmuebles$NoCCostos<-as.numeric(inmuebles$CentroCostos)
 inmuebles$CentroCostos <- factor(inmuebles$CentroCostos,
                                    labels = centro_costos_nombres)
