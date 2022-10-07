@@ -150,9 +150,9 @@ filtro_temp<-is.element(bd_localizacion$id,c(id_fuera,id_no_ciudad) ) # filtro t
 print(sum(filtro_temp))
 localizaciones_mal<-bd_localizacion[filtro_temp,] # localizaciones mal 
 
-############################geocode arcgis con conjunto ###########################3 
+############################tidygeocoder::geocode arcgis con conjunto ###########################3 
 localizaciones_mal$direccion_cor<-paste(localizaciones_mal[,direccion_],localizaciones_mal$Ciudad,"Colombia",sep=',')
-geocode_intento1<-geocode(.tbl=localizaciones_mal,address =  "direccion_cor", method= metodo_geocode )
+geocode_intento1<-tidygeocoder::geocode(.tbl=localizaciones_mal,address =  "direccion_cor", method= metodo_geocode )
 
 filtro_na<-is.na(geocode_intento1$lat) | is.na(geocode_intento1$long)
 bd_localizacion[filtro_temp,]$localizaciones.lat[!filtro_na]<-geocode_intento1$lat[!filtro_na]
@@ -191,9 +191,9 @@ for (direccion in datos_completos$Direccion){
   direcciones<-c(direcciones,palabrastemp[1])
   palabras_apa<-c(palabras_apa,palabrastemp[2])
 }
-datos_completos$Direcciones_prueba<-paste(datos_completos$Direcciones_c,
-                                          str_trim(datos_completos$Lugar), sep=' ' ) 
 datos_completos$Lugar <- palabras_apa
+datos_completos$Direcciones_prueba<-paste(datos_completos$Direcciones_c,
+                                          str_trim(datos_completos$Lugar), sep=' ' )
 ```
 
 
@@ -215,6 +215,7 @@ localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_c")
 localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
 
+
 localizaciones_sf<- localizaciones %>% # transformando a sf
       st_as_sf(coords = c('localizaciones.long', 'localizaciones.lat')) %>%
     st_set_crs(value = 4326) %>%
@@ -223,6 +224,9 @@ localizaciones_sf<- localizaciones %>% # transformando a sf
 interseccion_1<-table(localizaciones_sf$shapeName,localizaciones_sf$Ciudad_temp )
 print(interseccion_1)
 id_fuera<-localizaciones[!is.element(localizaciones$id,localizaciones_sf$id),'id'] # id fuera del mapa
+length(interseccion_1)
+length(localizaciones_sf$shapeName)
+length(localizaciones_sf$Ciudad_temp)
 print(sum(id_fuera))
 localizaciones<-localizaciones[,names(localizaciones)[1:5]]
 write.csv2(x = unique(localizaciones), file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
@@ -241,7 +245,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada04-10-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada06-10-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
@@ -377,7 +381,7 @@ localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
 filtro_prueba<- localizaciones[localizaciones$localizaciones.lat == 6.34034 & localizaciones$localizaciones.long== -75.55916,]
 addres_new<-paste(localizaciones[filtro_prueba,]$Direcciones_prueba,localizaciones[filtro_prueba,]$Ciudad,'Colombia',sep=',')
 sum(filtro_prueba)
-localizaciones_mod<- geocode(data.frame(X= addres_new),'X',  method = "arcgis" )
+localizaciones_mod<- tidygeocoder::geocode(data.frame(X= addres_new),'X',  method = "arcgis" )
 localizaciones[filtro_prueba,]$localizaciones.lat<-localizaciones_mod$lat
 localizaciones[filtro_prueba,]$localizaciones.long<-localizaciones_mod$long
 write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
@@ -410,3 +414,4 @@ for (i in localizaciones_corr$addres_temp){
 write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 
 ```
+

@@ -1,21 +1,17 @@
 #Cargue las librerias necesaria
 library(DT)
-library(gt)
 library(sf)
 library(sp)
 library(maps)
 library(png)
 library(tmap)
-library(bslib)
 library(dplyr)
 library(ggmap)
 library(shiny)
 library(tidyr)
 library(ggtext)
 library(plotly)
-library(readxl)
 library(ggplot2)
-library(leaflet)
 library(stringr)
 library(ggthemes)
 library(rsconnect)
@@ -203,10 +199,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5686 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 113 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5573 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1054 de estos inmuebles y Laureles 868 
+                                tags$p(" Son 5713 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 83 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5630 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1057 de estos inmuebles y Laureles 876 
                                      inmuebles. ")
                          )
                        )
@@ -302,33 +298,37 @@ server <- function(input, output, session) {
   
   area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
     dplyr::filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
-                                  "BELLO",    # estan en mayuscula y no estan
-                                  "COPACABANA",# en UTF-8 
-                                  "ENVIGADO",
-                                  "CALDAS", # hay dos caldas en colombia
-                                  "ITAGÃœÃ", # itagui
-                                  "LA ESTRELLA", 
-                                  "SABANETA",
-                                  "SAN JERÃ“NIMO",
-                                  "BOGOTÃ, D.C."
+                                         "BELLO",    # estan en mayuscula y no estan
+                                         "COPACABANA",# en UTF-8 
+                                         "ENVIGADO",
+                                         "CALDAS", # hay dos caldas en colombia
+                                         "ITAGÃœÃ", # itagui
+                                         "LA ESTRELLA", 
+                                         "SABANETA",
+                                         "SAN JERÃ“NIMO",
+                                         "RIONEGRO",
+                                         "BOGOTÃ, D.C."
     ) ) 
     ) %>%
     st_transform(crs = 3857)
   # Cambiandoles los nombres por como se escribe
-  area_metropolitana$shapeName<-c("CALDAS_NO",# no son de antioquia        
-                                  "ENVIGADO",
-                                  "ITAGÜÍ",
-                                  "CALDAS",
-                                  "SAN JERÓNIMO",
-                                  "BOGOTÁ",
-                                  "MEDELLIN",
-                                  "COPACABANA",
-                                  "BELLO",
-                                  "SABANETA",
-                                  "LA ESTRELLA"  
+  mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia
+                              "RIONEGRO_NO",
+                              "ENVIGADO",
+                              "ITAGUI",
+                              "CALDAS",
+                              "SAN JERONIMO",
+                              "RIONEGRO" ,
+                              "BOGOTA",
+                              "MEDELLIN",
+                              "COPACABANA",
+                              "BELLO",
+                              "SABANETA",
+                              "LA ESTRELLA"
   )
   # Eliminar el Caldas que no es de Antioquia
-  area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName == "CALDAS_NO"),]
+  area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName == "CALDAS_NO" & 
+                                               area_metropolitana$shapeName == "RIONEGRO_NO"),]
   
   
   ################## Mapas
@@ -378,7 +378,8 @@ server <- function(input, output, session) {
     # Mapa del aréa metropolitana con los inmuebles 
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
+      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)+
+      tmap_options(max.categories = 32)
     
   })  
   observeEvent(input$map_plot_marker_click,{
@@ -444,7 +445,8 @@ server <- function(input, output, session) {
     # Mapa del aréa metropolitana con los inmuebles 
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
-      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)
+      tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)+
+      tmap_options(max.categories = 32)
   })
   observeEvent(input$map_plot_b_marker_click,{
     output$data_filtro_b<- DT::renderDataTable({
@@ -677,7 +679,7 @@ server <- function(input, output, session) {
                   size=4.0                            
         ) +  
         scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
-                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon")) +    
+                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon","Rionegro")) +    
         
         theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
         theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
@@ -704,7 +706,7 @@ server <- function(input, output, session) {
                   size=4.0                            
         ) +  
         scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
-                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon")) +    
+                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon","Rionegro")) +    
         
         theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
         theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
@@ -760,7 +762,8 @@ server <- function(input, output, session) {
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
-                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr","Bogota")) +                                            
+                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana",
+                                                        "San Antonio Pr","Bogota","Rionegro")) +                                            
         
         geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
@@ -785,7 +788,8 @@ server <- function(input, output, session) {
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
-                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana", "San Antonio Pr","Bogota")) +                                            
+                                                        "La estrella", "San Jeronimo", "Caldas", "Copacabana", 
+                                                        "San Antonio Pr","Bogota","Rionegro")) +                                            
         
         geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
