@@ -212,8 +212,8 @@ localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"arcgis", "Direcciones_c")
 localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_prueba")
 localizaciones<-geocode_metodos(localizaciones,"osm", "Direcciones_c")
-localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_prueba")
-localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
+#localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_prueba")
+#localizaciones<-geocode_metodos(localizaciones,"cascade", "Direcciones_c")
 
 
 localizaciones_sf<- localizaciones %>% # transformando a sf
@@ -245,7 +245,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada06-10-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada11-10-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
