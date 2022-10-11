@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+# Librerias
+library(knitr)
 ```
 
 ```{r}
@@ -22,5 +24,41 @@ Bello <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 10)
 No_se <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 8)
 No_se_1 <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 9)
 Global_Sedes <- read_excel("informe Global ARRIENDOS.xlsx",col_names = TRUE,sheet = 11)
+```
+```{r}
+# Centro de Costos Colores
+
+uno <- c(1:7,10:13)
+Colores2018 <- kable(Colores[uno,1:14 ], caption = "2018 Colores",col.names= NULL)
+Colores2018
+
+dos <- c(16:24,26:35)
+Colores2019 <- kable(Colores[dos,1:15 ], caption = "2019 Colores",col.names= NULL)
+Colores2019
+
+Colores2020 <- kable(Colores[39:51,1:17 ], caption = "2020 Colores",col.names= NULL)
+Colores2020
+
+Colores2021 <- kable(Colores[55:84,1:16 ], caption = "2021 Colores",col.names= NULL)
+Colores2021
+
+Colores2022 <- kable(Colores[87:104,1:15 ], caption = "2022 Colores",col.names= NULL)
+Colores2022
+```
+
+```{r}
+# Centro de Costos Calasanz
+
+Calasanz2022 <- kable(Calasanz[1:8,1:15 ], caption = "2022 Colores")
+Calasanz2022
+
+```
+```{r}
+# Centro de Costos Laureles
+
+tres <- c(1:6,9:12)
+Laureles2018 <- kable(Laureles[uno,1:15 ], caption = "2018 Colores",col.names= NULL)
+Laureles2018
+
 ```
 
