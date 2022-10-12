@@ -23,24 +23,28 @@ mapa_inmuebles <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
                                   "SABANETA",
                                   "SAN JERÃ“NIMO",
                                   "RIONEGRO",
-                                  "BOGOTÃ, D.C."
+                                  "BOGOTÃ, D.C.",
+                                  "LA CEJA",
+                                  "MARINILLA"
     ) ) 
     ) %>%
     st_transform(crs = 3857)
   # Cambiandoles los nombres por como se escribe
 mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia
-                                  "RIONEGRO_NO",
-                                  "ENVIGADO",
-                                  "ITAGUI",
-                                  "CALDAS",
-                                  "SAN JERONIMO",
-                                  "RIONEGRO" ,
-                                  "BOGOTA",
-                                  "MEDELLIN",
-                                  "COPACABANA",
-                                  "BELLO",
-                                  "SABANETA",
-                                  "LA ESTRELLA"
+                            "MARINILLA",
+                            "RIONEGRO_NO",
+                            "ENVIGADO",
+                            "ITAGUI",
+                            "LA CEJA",
+                            "CALDAS",
+                            "SAN JERONIMO",
+                            "RIONEGRO" ,
+                            "BOGOTA",
+                            "MEDELLIN",
+                            "COPACABANA",
+                            "BELLO",
+                            "SABANETA",
+                            "LA ESTRELLA"
   )
 ```
 
@@ -245,7 +249,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada11-10-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada12-10-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes

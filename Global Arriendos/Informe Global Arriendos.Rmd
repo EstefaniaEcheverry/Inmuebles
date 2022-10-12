@@ -56,9 +56,18 @@ Calasanz2022
 ```{r}
 # Centro de Costos Laureles
 
-tres <- c(1:6,9:12)
+tres <- c(2:6,9:12)
+Laureles2018 <- kable(Laureles[tres,1:15 ], caption = "2018 Colores",col.names= Laureles[1,1:15])
+Laureles2018
+cuatro <- c(16:20,23:28)
+Laureles2019 <- kable(Laureles[cuatro,1:16 ], caption = "2019 Colores",col.names= Laureles[15,1:16])
+Laureles2019
+Laureles2020 <- kable(Laureles[47:55,1:15 ], caption = "2020 Colores",col.names= NULL)
+Laureles2020
+quinto <- c(59:65,68:75)
+Laureles2021 <- kable(Laureles[quinto,1:15 ], caption = "2021 Colores",col.names= NULL)
+Laureles2021
 Laureles2018 <- kable(Laureles[uno,1:15 ], caption = "2018 Colores",col.names= NULL)
 Laureles2018
-
 ```
 

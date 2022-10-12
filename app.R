@@ -199,10 +199,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5732 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 59 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5673 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1068 de estos inmuebles y Laureles 880
+                                tags$p(" Son 5735 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 54 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5681 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1068 de estos inmuebles y Laureles 882
                                      inmuebles. ")
                          )
                        )
@@ -307,24 +307,28 @@ server <- function(input, output, session) {
                                          "SABANETA",
                                          "SAN JERÃ“NIMO",
                                          "RIONEGRO",
-                                         "BOGOTÃ, D.C."
+                                         "BOGOTÃ, D.C.",
+                                         "LA CEJA",
+                                         "MARINILLA"
     ) ) 
     ) %>%
     st_transform(crs = 3857)
   # Cambiandoles los nombres por como se escribe
   area_metropolitana$shapeName<-c("CALDAS_NO",# no son de antioquia
-                              "RIONEGRO_NO",
-                              "ENVIGADO",
-                              "ITAGUI",
-                              "CALDAS",
-                              "SAN JERONIMO",
-                              "RIONEGRO" ,
-                              "BOGOTA",
-                              "MEDELLIN",
-                              "COPACABANA",
-                              "BELLO",
-                              "SABANETA",
-                              "LA ESTRELLA"
+                                  "MARINILLA",
+                                  "RIONEGRO_NO",
+                                  "ENVIGADO",
+                                  "ITAGUI",
+                                  "LA CEJA",
+                                  "CALDAS",
+                                  "SAN JERONIMO",
+                                  "RIONEGRO" ,
+                                  "BOGOTA",
+                                  "MEDELLIN",
+                                  "COPACABANA",
+                                  "BELLO",
+                                  "SABANETA",
+                                  "LA ESTRELLA"
   )
   # Eliminar el Caldas que no es de Antioquia
   area_metropolitana <- area_metropolitana[!(area_metropolitana$shapeName == "CALDAS_NO" & 
@@ -763,7 +767,7 @@ server <- function(input, output, session) {
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
                                                         "La estrella", "San Jeronimo", "Caldas", "Copacabana",
-                                                        "San Antonio Pr","Bogota","Rionegro")) +                                            
+                                                        "San Antonio Pr","Bogota","Rionegro", "La Ceja", "Marinilla")) +                                            
         
         geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
@@ -789,7 +793,7 @@ server <- function(input, output, session) {
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
                                                         "La estrella", "San Jeronimo", "Caldas", "Copacabana", 
-                                                        "San Antonio Pr","Bogota","Rionegro")) +                                            
+                                                        "San Antonio Pr","Bogota","Rionegro","La Ceja", "Marinilla")) +                                            
         
         geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
