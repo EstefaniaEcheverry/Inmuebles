@@ -180,3 +180,8 @@ Informe2022 <- kable(Global_Sedes[73:85,1:10 ], caption = "Informe Mensual 2022"
 Informe2022
 ```
 
+```{r}
+Captaciones_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 1)
+Asesores_ext_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 2)
+```
+
