@@ -183,5 +183,6 @@ Informe2022
 ```{r}
 Captaciones_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 1)
 Asesores_ext_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 2)
+Asesores_int_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 3)
 ```
 
