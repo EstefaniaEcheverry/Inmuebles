@@ -1,0 +1,188 @@
+---
+title: "Informe Global Arriendos"
+author: "Estefania Echeverry Franco"
+date: '2022-09-16'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Librerias
+library(knitr)
+```
+
+```{r  echo=FALSE}
+library(readxl)
+Colores <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 1)
+Calasanz <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 2)
+Laureles <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 3)
+Poblado <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 4)
+Sabaneta <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 5)
+Estrella <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 6)
+Envigado <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 7)
+Bello <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 10)
+No_se <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 8)
+No_se_1 <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 9)
+Global_Sedes <- read_excel("informe Global ARRIENDOS_cor.xlsx",col_names = TRUE,sheet = 11)
+```
+
+```{r}
+# Centro de Costos Colores
+
+uno <- c(2:7,10:13)
+Colores2018 <- kable(Colores[uno,1:14 ], caption = "2018 Colores",col.names= Colores[1,1:14])
+Colores2018
+
+dos <- c(17:24,26:35)
+Colores2019 <- kable(Colores[dos,1:15 ], caption = "2019 Colores",col.names= Colores[16,1:15])
+Colores2019
+
+Colores2020 <- kable(Colores[39:51,1:17 ], caption = "2020 Colores",col.names= Colores[38,1:17])
+Colores2020
+
+Colores2021 <- kable(Colores[56:84,1:16 ], caption = "2021 Colores",col.names= Colores[55,1:16])
+Colores2021
+
+Colores2022 <- kable(Colores[88:104,1:15 ], caption = "2022 Colores",col.names= Colores[87,1:15])
+Colores2022
+```
+
+```{r}
+# Centro de Costos Calasanz
+
+Calasanz2022 <- kable(Calasanz[1:8,1:15 ], caption = "2022 Calasanz")
+Calasanz2022
+
+```
+
+```{r}
+# Centro de Costos Laureles
+
+tres <- c(3:9,11:13)
+Laureles2018 <- kable(Laureles[tres,1:15 ], caption = "2018 Laureles",col.names= Laureles[2,1:15])
+Laureles2018
+cuatro <- c(16:20,23:28)
+Laureles2019 <- kable(Laureles[cuatro,1:16 ], caption = "2019 Laureles",col.names= Laureles[15,1:16])
+Laureles2019
+Laureles2020 <- kable(Laureles[48:55,1:15 ], caption = "2020 Laureles",col.names= Laureles[47,1:15])
+Laureles2020
+quinto <- c(60:65,68:75)
+Laureles2021 <- kable(Laureles[quinto,1:15 ], caption = "2021 Laureles",col.names= Laureles[59,1:15])
+Laureles2021
+Laureles2021_1 <- kable(Laureles[79:94,1:16 ], caption = "2021 Laureles",col.names= Laureles[59,1:16])
+Laureles2021_1
+
+```
+
+```{r}
+# Centro de Costos Poblado
+
+sexto <- c(3:9,11:13)
+Poblado2018 <- kable(Poblado[sexto,1:15 ], caption = "2018 Poblado",col.names= Poblado[1,1:15])
+Poblado2018
+
+Poblado2019 <- kable(Poblado[16:27,1:16 ], caption = "2019 Poblado",col.names= Poblado[15,1:16])
+Poblado2019
+
+Poblado2020 <- kable(Poblado[31:38,1:17 ], caption = "2020 Poblado",col.names= Poblado[30,1:17])
+Poblado2020
+
+Poblado2021 <- kable(Poblado[42:55,1:16 ], caption = "2021 Poblado",col.names= Poblado[41,1:16])
+Poblado2021
+
+Poblado2022 <- kable(Poblado[59:71,1:15 ], caption = "2022 Poblado",col.names= Poblado[58,1:15])
+Poblado2022
+
+```
+
+```{r}
+# Centro de Costos Sabaneta
+
+septimo<- c(2:5,7:10)
+Sabaneta2018 <- kable(Sabaneta[septimo,1:15 ], caption = "2018 Sabaneta",col.names= Sabaneta[1,1:15])
+Sabaneta2018
+
+Sabaneta2019 <- kable(Sabaneta[22:32,1:16 ], caption = "2019 Sabaneta",col.names= Sabaneta[21,1:16])
+Sabaneta2019
+
+Sabaneta2020 <- kable(Sabaneta[36:44,1:17 ], caption = "2020 Sabaneta",col.names= Sabaneta[35,1:17])
+Sabaneta2020
+
+Sabaneta2021 <- kable(Sabaneta[48:62,1:15 ], caption = "2021 Sabaneta",col.names= Sabaneta[47,1:15])
+Sabaneta2021
+
+Sabaneta2022 <- kable(Sabaneta[66:76,1:15 ], caption = "2022 Sabaneta",col.names= Sabaneta[65,1:15])
+Sabaneta2022
+
+```
+
+```{r}
+# Centro de Costos Poblado
+
+Itagui_LaEstrella2018 <- kable(Sabaneta[12,1:15 ], caption = "2018 Itagui & la Estrella",col.names= Sabaneta[11,1:15])
+Itagui_LaEstrella2018
+
+
+Itagui_LaEstrella2019 <- kable(Estrella[2:13,1:16 ], caption = "2019 Itagui & la Estrella",col.names= Estrella[1,1:16])
+Itagui_LaEstrella2019
+
+LaEstrella2020 <- kable(Estrella[16:26,1:17 ], caption = "2020 de la Estrella",col.names= Estrella[15,1:17])
+LaEstrella2020
+
+LaEstrella2022 <- kable(Estrella[31:46,1:15 ], caption = "2022 de la Estrella",col.names= Estrella[30,1:15])
+LaEstrella2022
+
+```
+
+```{r}
+# Centro de Costos Envigado
+
+noveno<- c(2:5,7:9)
+Envigado2018 <- kable(Envigado[noveno,1:15 ], caption = "2018 Envigado",col.names= Envigado[1,1:15])
+Envigado2018
+
+Envigado2019 <- kable(Envigado[13:23,1:16 ], caption = "2019 Envigado",col.names= Envigado[12,1:16])
+Envigado2019
+
+Envigado2020 <- kable(Envigado[27:35,1:17 ], caption = "2020 Envigado",col.names= Envigado[26,1:17])
+Envigado2020
+
+Envigado2021 <- kable(Envigado[39:52,1:15 ], caption = "2021 Envigado",col.names= Envigado[38,1:15])
+Envigado2021
+
+Envigado2022 <- kable(Envigado[56:67,1:16 ], caption = "2022 Envigado",col.names= Envigado[55,1:16])
+Envigado2022
+
+```
+```{r}
+# Centro de Costos Bello
+
+Bello2022 <- kable(Bello[2:11,1:15 ], caption = "2022 Bello",col.names= Bello[1,1:15])
+Bello2022
+
+```
+```{r}
+# Informe Global de todas las Sedes
+
+Informe2018 <- kable(Global_Sedes[2:15,1:8 ], caption = "Informe Mensual 2018",col.names= Global_Sedes[1,1:8])
+Informe2018
+
+Informe2019 <- kable(Global_Sedes[20:34,1:8 ], caption = "Informe Mensual 2019",col.names= Global_Sedes[19,1:8])
+Informe2019
+
+Informe2020 <- kable(Global_Sedes[39:53,1:8 ], caption = "Informe Mensual 2020",col.names= Global_Sedes[38,1:8])
+Informe2020
+
+Informe2021 <- kable(Global_Sedes[58:69,1:8 ], caption = "Informe Mensual 2021",col.names= Global_Sedes[57,1:8])
+Informe2021
+
+Informe2022 <- kable(Global_Sedes[73:85,1:10 ], caption = "Informe Mensual 2022",col.names= Global_Sedes[72,1:10])
+Informe2022
+```
+
+```{r}
+Captaciones_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 1)
+Asesores_ext_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 2)
+Asesores_int_Bello <- read_excel("SEDE BELLO 2022.xlsx",col_names = TRUE,sheet = 3)
+```
+
