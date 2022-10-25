@@ -44,6 +44,7 @@ nombres_c<-c("IdInmueble"        ,     "Referencia" ,           "NoContrato"    
              "Direcciones_c")
 #datos_completos<-read.csv2("data_orden/inmuebles_23.csv",sep=";", header =TRUE)
 datos_completos<-read.csv2("BD/inmuebles_app.csv",sep=";", header =TRUE)
+datos_completos$Lugar<-str_trim(gsub("  "," ",datos_completos$Lugar))
 localizaciones_join<-read.csv2("BD/localizacion_inmuebles.csv",header=TRUE)
 localizaciones_join<-unique(localizaciones_join[,names(localizaciones_join)])
 localizaciones_join$conector<-paste(localizaciones_join$Direcciones_prueba,
@@ -59,6 +60,7 @@ datos_completos$conector<-paste(datos_completos$Direcciones_prueba,
 datos_completos<-merge(x = datos_completos, y = localizaciones_join, 
                        by = "conector")
 datos_completos$localizaciones.address<-datos_completos$conector
+
 #datos_completos$Direcciones_c<-datos_completos$conector
 filtro<-datos_completos$Admon..Inc.=='True'
 datos_completos[filtro,'Vr.Canon'] <- datos_completos[filtro,'Vr.Canon']-datos_completos[filtro,'Vr.Administracion']
