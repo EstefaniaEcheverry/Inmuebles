@@ -201,10 +201,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5782 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 16 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5766 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1081 de estos inmuebles y Laureles 890
+                                tags$p(" Son 5785 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 14 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5771 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1082 de estos inmuebles y Laureles 889
                                      inmuebles. ")
                          )
                        )
