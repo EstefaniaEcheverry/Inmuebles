@@ -201,10 +201,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5785 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 14 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5771 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1082 de estos inmuebles y Laureles 889
+                                tags$p(" Son 5803 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 18 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5785 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1086 de estos inmuebles y Laureles 890
                                      inmuebles. ")
                          )
                        )
@@ -764,7 +764,7 @@ server <- function(input, output, session) {
         geom_bar( stat="identity"              
         )+  
         
-        ylim(c(0,3050))+
+        ylim(c(0,3200))+
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
