@@ -201,10 +201,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5803 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 18 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5785 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1086 de estos inmuebles y Laureles 890
+                                tags$p(" Son 5818 inmuebles controlados por los diferentes Centros de costos , 
+                                     segun los datos 126 de estos inmuebles estan bloqueados o desactivados,
+                                     es decir, existen 5691 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1059 de estos inmuebles y Laureles 874
                                      inmuebles. ")
                          )
                        )
@@ -699,7 +699,7 @@ server <- function(input, output, session) {
                                           fill=CentroCostos,label=Vr.Canon )) +
         geom_bar(width = 0.9, stat="identity")+  
         
-        ylim(c(0,25))+
+        ylim(c(0,35))+
         labs(x="Centros de costos", y= "Frecuencia",title = "Diagrama de barras para la variable Centro de costos") +   
         labs(fill = "")+                                         
         
@@ -790,7 +790,7 @@ server <- function(input, output, session) {
         geom_bar( stat="identity"              
         )+  
         
-        ylim(c(0,60))+
+        ylim(c(0,70))+
         labs(x="Ciudad", y= "Frecuencia", title= "Diagrama de barras para la variable Ciudad") +   
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
@@ -865,7 +865,7 @@ server <- function(input, output, session) {
       # Gráfica de Aseguradora
       p9 <- tabla_aseg1 %>% ggplot(aes(x=Aseguradora, y = Total.aseg, fill=Aseguradora,label=Vr.Canon )) + 
         geom_bar(width = 0.9, stat="identity",position = position_dodge())+  
-        ylim(c(0,100))+
+        ylim(c(0,110))+
         labs(x="Aseguradoras", y= "Frecuencia",title= "Diagrama de barras para la variable Aseguradora") +   
         labs(fill = "")+                                         
         
