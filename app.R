@@ -201,11 +201,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5817 inmuebles controlados por los diferentes Centros de costos , 
-                                     segun los datos 103 de estos inmuebles estan bloqueados o desactivados,
-                                     es decir, existen 5713 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1062 de estos inmuebles y Laureles 878
-                                     inmuebles. ")
+                                tags$p(" Son 5834 inmuebles controlados por los diferentes Centros de costos , 
+                                     según los datos 75 de estos inmuebles están bloqueados o desactivados,
+                                     es decir, existen 5758 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1070 de estos inmuebles y Laureles 879 inmuebles. ")
                          )
                        )
                        
@@ -213,7 +212,7 @@ ui <- fluidPage(
                        ), 
                        tabPanel(title="Datos",icon = icon("table"),value= "datos.1", DT::dataTableOutput("dataT")),
                        tabPanel(title="Estructura",icon = icon("uncharted"),value= "datos.2",verbatimTextOutput("structure")),
-                       tabPanel(title="Resumen estadísticas",icon = icon("chart-pie"),value= "datos.3",verbatimTextOutput("summary"))
+                       tabPanel(title="Resumen estadístico",icon = icon("chart-pie"),value= "datos.3",verbatimTextOutput("summary"))
                 )
         ),
         # second tab item or landing page here ..
@@ -240,18 +239,18 @@ ui <- fluidPage(
                                                                       collapsible = TRUE, status = "primary",  collapsed = TRUE, solidHeader = TRUE))),
                                 withSpinner(plotlyOutput("baraseg"))),
                        tabPanel(title="Distribución",icon = icon("chart-line"),target="", value="distro",
-                                radioButtons(inputId ="inmueble_dis" , label = "Selecione tipo de inmueble"
+                                radioButtons(inputId ="inmueble_dis" , label = "Seleccione tipo de inmueble"
                                              , choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
                                 withSpinner(plotlyOutput("histplot", height = "350px"))),
                        tabPanel(title="Box Plots",icon = icon("chart-line"),value="boxpl",
-                                radioButtons(inputId ="inmueble_box" , label = "Selecione tipo de inmueble"
+                                radioButtons(inputId ="inmueble_box" , label = "Seleccione tipo de inmueble"
                                              , choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
                                 radioButtons(inputId ="inmueble_ab_box" , label = "Seleccione por tipo de inmueble"
                                              , choices = c('Activos','Bloqueados') , inline = TRUE),
                                 withSpinner(plotlyOutput("boxplot", height = "350px"))
                        ),
                        tabPanel(title="Scatterplot ",icon =icon("chart-line"),value="relation",
-                                radioButtons(inputId ="inmueble_scatter" , label = "Selecione tipo de inmueble"
+                                radioButtons(inputId ="inmueble_scatter" , label = "Seleccione tipo de inmueble"
                                              ,choices = unique(datos$Tipo_de_Inmueble) , inline = TRUE),
                                 withSpinner(plotlyOutput("scatter")))
                 )
@@ -685,7 +684,7 @@ server <- function(input, output, session) {
                   size=4.0                            
         ) +  
         scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
-                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon","Rionegro")) +    
+                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon","Rionegro","Copacabana")) +    
         
         theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
         theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
@@ -712,7 +711,7 @@ server <- function(input, output, session) {
                   size=4.0                            
         ) +  
         scale_fill_discrete(name = "Centro de costos", labels = c("Laureles", "Sabaneta", "Poblado" ,"Colores", "Envigado", "Itagui", "Centro", "Bello",
-                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon","Rionegro")) +    
+                                                                  "La estrella", "San Antonio Pr" , "Calasanz","Fontibon","Rionegro","Copacabana")) +    
         
         theme(axis.text.x = element_text(angle = -45, vjust = 1, hjust=-0.3)) + 
         theme(legend.position = "left") +  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
@@ -890,7 +889,7 @@ server <- function(input, output, session) {
   
   # Rendering the box header  
   output$head1 <- renderText(
-    paste("Los Centros de Costos con mas Inmuebles")
+    paste("Los Centros de Costos con más Inmuebles")
   )
   
   # Rendering the box header 
@@ -946,7 +945,7 @@ server <- function(input, output, session) {
   
   # Rendering the box header  
   output$head3 <- renderText(
-    paste("Los municipios con mas inmuebles")
+    paste("Los municipios con más inmuebles")
   )
   
   # Rendering the box header 
@@ -993,7 +992,7 @@ server <- function(input, output, session) {
   
   # Rendering the box header  
   output$head5 <- renderText(
-    paste("Las aseguradoras con mas inmuebles")
+    paste("Las aseguradoras con más inmuebles")
   )
   
   # Rendering the box header 
@@ -1086,7 +1085,8 @@ server <- function(input, output, session) {
                     color= datos_$CentroCostos)%>%
         layout(title=paste('Gráfico de box-plot de ',input$var2, ' por Centro de Costos \n' ,texto_add,sep=''),
                yaxis=list(title="Frecuencia"))
-      
+    #Definición de la aplicación
+shinyApp(ui = ui, server = server)  
     }
     else{
       ggplot() + 

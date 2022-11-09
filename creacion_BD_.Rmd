@@ -250,11 +250,11 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada04-11-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada09-11-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
-centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25","26")
+centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25","26","28")
 inmuebles <- inmuebles[is.element(inmuebles$CentroCostos, 
                                          centro_costos_codigo ), ]
 
@@ -263,7 +263,7 @@ centro_costos_nombres<- c("Laureles","Sabaneta","Poblado",
                           "Colores","Envigado","Itagui",
                           "Centro","Bello","La estrella", 
                           "San Antonio Pr." , "Calasanz",
-                          "Fontibon","Rionegro")
+                          "Fontibon","Rionegro","Copacabana")
 inmuebles$NoCCostos<-as.numeric(inmuebles$CentroCostos)
 inmuebles$CentroCostos <- factor(inmuebles$CentroCostos,
                                    labels = centro_costos_nombres)
