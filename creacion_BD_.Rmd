@@ -56,7 +56,7 @@ Son las palabras internas que representan conjuntos y palabras que representan u
 ```{r palabras direcciones }
 
 # Palabras que se junta con cada dirección
-palabras_inter <- c("CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","URBANIZACION","URB", 
+palabras_inter <- c("CONJ","CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZACIÓN","URBANIZACION","URB", 
                     "EDIFICIO","EDIFICO","ED","EDF","MULTIFAMILIAR","MULTIFAMILIARES","LC",
                     "UNIDAD","MIRADOR","LOMA","LOMAS","LOS CABOS","BALCONES","EDIFICIOS","TORRES","TORRE",
                     "SERRANA","SERRANIAS","PARQUE","PARQUES","SETAI", "ABADIA","GUAYACANES",
@@ -250,7 +250,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada09-11-2022.xls"
+file_actual<-"data_orden/BaseDatosInmueblesPortada11-11-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes

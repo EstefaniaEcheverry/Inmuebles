@@ -201,10 +201,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5834 inmuebles controlados por los diferentes Centros de costos , 
-                                     según los datos 75 de estos inmuebles están bloqueados o desactivados,
-                                     es decir, existen 5758 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1070 de estos inmuebles y Laureles 879 inmuebles. ")
+                                tags$p(" Son 5849 inmuebles controlados por los diferentes Centros de costos , 
+                                     según los datos 64 de estos inmuebles están bloqueados o desactivados,
+                                     es decir, existen 5785 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1074 de estos inmuebles y Laureles 887 inmuebles. ")
                          )
                        )
                        
@@ -1085,8 +1085,6 @@ server <- function(input, output, session) {
                     color= datos_$CentroCostos)%>%
         layout(title=paste('Gráfico de box-plot de ',input$var2, ' por Centro de Costos \n' ,texto_add,sep=''),
                yaxis=list(title="Frecuencia"))
-    #Definición de la aplicación
-shinyApp(ui = ui, server = server)  
     }
     else{
       ggplot() + 
