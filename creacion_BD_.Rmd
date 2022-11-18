@@ -65,7 +65,7 @@ palabras_inter <- c("CONJ","CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZAC
                     "ALAMEDA","CEDROS","CAMINO","RECINTO","BOSQUES","BALCON","BULEVAR","LAS VEGAS","REMANSO",
                     "CONQUISTADOR","ALTOS,","COLINAS","CORAZON","LAS ANTILLAS","CONDOMINIO","CIUDADELA","PARIS",
                     "JACARANDAS","VILLA","AGUAS","ARRECIFES","ACUARELA","ACUARELAS","GUADUALES","RESERVA","LA   RESERVA","ENTRE", "PLAZA","LA PLAZA","CASTELLON","NUCLEO","PRADO","PRADOS","NUEVO","PARCELACION",
-                    "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO","CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON","AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE","SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE","PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA","CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA","NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO","CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL","GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA","URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO", "OLIVENZA","BOSQUE", "CERRO","CERROS","CONDOMINIO")
+                    "ESTADIO","VIVARE","LA MOTA","BASALTO","MADEROS","PIZARRA","AMARELLO","CENTRO","VENTURA"," SAN FRANCISCO","LA GRUTA","FARO", "RINCON","AIRES","SANTIVARI","SAN MIGUEL","PUERTA","PROVIDENCIA","FUENTE","SAN TELMO","VEGAS","CASTROPOLO","VIVALTO","SOL","NIQUIA","BOSQUE","PAMPLONA","XUE","BRUJA","CEIBA","ALTOBELO","OPORTO","FLOR","VOLGA","CIGARRAS","NUEVA","CAMPO","SABATTO","JARDIN","LA ALQUERIA","BAHIA","NATIVO","MONTEPARAISO","LA VEGA","VLORE","SIERRA","VALPARAISO","CAPELLA","ALONDRA","ALMENDRA","BRUJAS","ASOCIACION","COLIBRI","PORTAL","GAUDI","CAPELLA","PALMERAS","CANTO","ARCE","COMERCIAL","MAGDALENA","URNANIZACION","NEBRASKA","TRENTTO","LISBOA","MISSISSIPPI","LUNA","URANIA","COLORES","EL ROSAL","JARDINES","QUINTAS","PRIMEIRO","JAZZ","MESSANTIA","ORION","FIRENZZE","ALDEA","MANZANARES","FORETTI","CHIE","KAMELOT","BIOCITY","CENTRAL","FRONTERA","GIRASOLES","CARLOS","SENDERO","LAUREL","LUXURY","GUADUAL","LOS ARBOLES","FELICITY","AMATISTA","MONTE","HUNGRIA","PACIFICA","VIÑA","SENDEROS","ENSENADA","LOS COLORES","CALASANIA","MOCACCINO","CASTILLO","CIUDAD","FLORIDA","BALUARTE","CATTLEYA","CRISTOBAL","KIRIBATI","CANTARES","PARQUE","PROVIDENCIA","VENTUM","MONTEFLOR","OBRA","MONTE","SAN JOAQUIN","TERRITORIO","CENTURY","ALIADAS","MESSANTIA","VENTTO","PUERTO", "OLIVENZA","BOSQUE", "CERRO","CERROS","CONDOMINIO","MIXTO","GUAYACAN")
 # Palabras a eliminar de las direcciones 
 palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA","PH","VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1", "CON", "ET", "COL","GUAYA")
 ```
@@ -250,7 +250,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/BaseDatosInmueblesPortada15-11-2022.xls"
+file_actual<-"data_orden/Datos Dia/BaseDatosInmueblesPortada17-11-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
@@ -421,4 +421,30 @@ for (i in localizaciones_corr$addres_temp){
 write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 
 ```
+```{r}
+files <- list.files("C:/Users/ESTADISTA_2/Documents/Portada Inmobiliaria/Inmuebles_Arrendados/data_orden/Datos Dia")
+file_ <- files[1]
+file_
+fecha<-strsplit( file_, "Portada")[[1]][2]
+fecha
+strsplit(fecha, ".xls" )[[1]][1]
+primer <- read_excel(paste("C:/Users/ESTADISTA_2/Documents/Portada Inmobiliaria/Inmuebles_Arrendados/data_orden/Datos Dia",file_, sep = "/"))
+# Seleccionar solo los sectores de interes
+centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25","26","28")
+primer <- primer[is.element(primer$CentroCostos, 
+                                         centro_costos_codigo ), ]
+
+#########################
+centro_costos_nombres<- c("Laureles","Sabaneta","Poblado",
+                          "Colores","Envigado","Itagui",
+                          "Centro","Bello","La estrella", 
+                          "San Antonio Pr." , "Calasanz",
+                          "Fontibon")
+primer$NoCCostos<-as.numeric(primer$CentroCostos)
+primer$CentroCostos <- factor(primer$CentroCostos,
+                                   labels = centro_costos_nombres)
+
+primer %>% group_by(CentroCostos) %>% summarise()
+```
+
 

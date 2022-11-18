@@ -127,10 +127,10 @@ c1 = datos %>% select(c(13:15))%>%
   names()
 
 #####################
-c3= unique(direccion_unique$Centro_de_Costos)
-c4= names(direccion_unique)
-n1<-length(c4)
-c4=c4[c(1:(n1-2) ) ]
+c3 = unique(direccion_unique$Centro_de_Costos)
+c4 = names(direccion_unique)
+n1 <-length(c4)
+c4 =c4[c(1:(n1-2) ) ]
 #Definición de la interfaz de usuario
 ui <- fluidPage(
   
@@ -182,7 +182,7 @@ ui <- fluidPage(
         conditionalPanel("input.sidebar == 'viz' && input.t2 == 'boxpl'",
                          selectInput(inputId ="var2" ,label= "Seleccione la variable",
                                      choices =c1 ,selected="Vr.Canon")),
-        menuItem(text= "Inmuebles Map",tabName = "map",icon = icon("map")),
+        menuItem(text= "Inmuebles Map",tabName = "map",icon = icon("map-location-dot")),
         conditionalPanel("input.sidebar == 'map'",
                          selectInput(inputId ="var5" ,label= "Seleccione el Centro de Costos",
                                      choices =c3,multiple = TRUE )) ,
@@ -201,10 +201,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5846 inmuebles controlados por los diferentes Centros de costos , 
-                                     según los datos 57 de estos inmuebles están bloqueados o desactivados,
-                                     es decir, existen 5789 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1078 de estos inmuebles y Laureles 882 inmuebles. ")
+                                tags$p(" Son 5853 inmuebles controlados por los diferentes Centros de costos , 
+                                     según los datos 4o de estos inmuebles están bloqueados o desactivados,
+                                     es decir, existen 5813 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1082 de estos inmuebles y Laureles 885 inmuebles. ")
                          )
                        )
                        
@@ -262,7 +262,7 @@ ui <- fluidPage(
                                   fluidRow(
                                     br(),
                                     withSpinner(tmapOutput( outputId = "map_plot"))),br(),
-                                  actionButton("reset_input", "Base de Datos", icon("fa-light fa-table-list"), 
+                                  actionButton("reset_input", "Base de Datos", icon("location-dot"), 
                                                style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
                                   br(),br(),
                                   
@@ -273,13 +273,13 @@ ui <- fluidPage(
                        tabPanel(title="Bloqueados",
                                 fluidPage(fluidRow(br(),
                                                    withSpinner(tmapOutput(outputId = "map_plot_b"))),br(),
-                                          actionButton("reset_input_b", "Base de Datos", icon("fa-light fa-table-list"), 
+                                          actionButton("reset_input_b", "Base de Datos", icon("location-dot"), 
                                                        style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
                                           br(),br(),
                                           fluidRow(
                                             ( DT::dataTableOutput('data_filtro_b')) )
                                 )),
-                       tabPanel(title='Conjuntos',
+                       tabPanel(title='Conjuntos',icon("house-building"),
                                 fluidPage(fluidRow(DT::dataTableOutput('top_desc') )  ))
                 )
         )
@@ -288,7 +288,6 @@ ui <- fluidPage(
   )
   
 )
-
 # Definción de la funcionalidad lógica de la aplicación (servidor)
 
 server <- function(input, output, session) {
