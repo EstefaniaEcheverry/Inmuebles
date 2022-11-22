@@ -4,13 +4,14 @@ library(sf)
 library(sp)
 library(maps)
 library(png)
-library(tmap)
+library(tmap) # Actualizada
 library(dplyr)
 library(ggmap)
-library(shiny)
+library(shiny)# Libreria Shiny
 library(tidyr)
 library(ggtext)
 library(plotly)
+library(raster)
 library(ggplot2)
 library(stringr)
 library(ggthemes)
@@ -123,7 +124,7 @@ filtro=datos_b$Tipo_de_Inmueble
 datos_b$Tipo_de_Inmueble[filtro==F]<-'Vivienda'
 datos_b$Tipo_de_Inmueble[filtro]<-'Comercial'
 #  Choices for selectInput 
-c1 = datos %>% select(c(13:15))%>%
+c1 = datos %>% dplyr::select(c(13:15))%>%
   names()
 
 #####################
@@ -201,10 +202,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5853 inmuebles controlados por los diferentes Centros de costos , 
-                                     según los datos 4o de estos inmuebles están bloqueados o desactivados,
-                                     es decir, existen 5813 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1082 de estos inmuebles y Laureles 885 inmuebles. ")
+                                tags$p(" Son 5871 inmuebles controlados por los diferentes Centros de costos , 
+                                     según los datos 31 de estos inmuebles están bloqueados o desactivados,
+                                     es decir, existen 5840 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1087 de estos inmuebles y Laureles 887 inmuebles. ")
                          )
                        )
                        
@@ -279,7 +280,7 @@ ui <- fluidPage(
                                           fluidRow(
                                             ( DT::dataTableOutput('data_filtro_b')) )
                                 )),
-                       tabPanel(title='Conjuntos',icon("house-building"),
+                       tabPanel(title='Conjuntos',
                                 fluidPage(fluidRow(DT::dataTableOutput('top_desc') )  ))
                 )
         )
@@ -295,7 +296,7 @@ server <- function(input, output, session) {
   #####################
   ################################################################
   # Crear mapa con geoboundaries escogiendo solo los municipios
-  
+  colombia <- geoboundaries(country="COLOMBIA", adm_lvl = 2)
   area_metropolitana <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
     dplyr::filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
                                          "BELLO",    # estan en mayuscula y no estan
@@ -309,12 +310,14 @@ server <- function(input, output, session) {
                                          "RIONEGRO",
                                          "BOGOTÃ, D.C.",
                                          "LA CEJA",
-                                         "MARINILLA"
+                                         "MARINILLA",
+                                         "GUARNE"
     ) ) 
     ) %>%
     st_transform(crs = 3857)
   # Cambiandoles los nombres por como se escribe
   area_metropolitana$shapeName<-c("CALDAS_NO",# no son de antioquia
+                                  "GUARNE",
                                   "MARINILLA",
                                   "RIONEGRO_NO",
                                   "ENVIGADO",
@@ -349,7 +352,7 @@ server <- function(input, output, session) {
       dplyr::filter(direccion_unique$Nombre_del_Lugar!='' &
                (is.null(input$var5) |
                   is.element(direccion_unique$Centro_de_Costos, input$var5) ))%>%
-      select(c(Nombre_del_Lugar,Direcciones_c,Centro_de_Costos,Total_de_apartamentos) ) %>%
+      dplyr::select(c(Nombre_del_Lugar,Direcciones_c,Centro_de_Costos,Total_de_apartamentos) ) %>%
       dplyr::arrange(desc(Total_de_apartamentos) ) 
     
   }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
@@ -383,7 +386,7 @@ server <- function(input, output, session) {
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)+
-      tmap_options(max.categories = 32)
+      tmap_options(max.categories = 34)
     
   })  
   observeEvent(input$map_plot_marker_click,{
@@ -450,7 +453,7 @@ server <- function(input, output, session) {
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)+
-      tmap_options(max.categories = 32)
+      tmap_options(max.categories = 34)
   })
   observeEvent(input$map_plot_b_marker_click,{
     output$data_filtro_b<- DT::renderDataTable({
@@ -597,7 +600,7 @@ server <- function(input, output, session) {
     return(vector_resultado)
   }
   
-  # Tabla de los Centros de costos Vivienda y Comercial (Acitvos)
+  # Tabla de los Centros de costos Vivienda y Comercial (Activos)
   tabla_centroc <- datos %>% 
     group_by(CentroCostos) %>%
     dplyr::mutate(Vr.canon_c=var_condicion(Vr.Canon,Tipo_de_Inmueble,'Comercial'),
@@ -767,7 +770,7 @@ server <- function(input, output, session) {
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
                                                         "La estrella", "San Jeronimo", "Caldas", "Copacabana",
-                                                        "San Antonio Pr","Bogota","Rionegro", "La Ceja", "Marinilla")) +                                            
+                                                        "San Antonio Pr","Bogota","Rionegro", "La Ceja", "Marinilla", "Guarne")) +                                            
         
         geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
@@ -793,7 +796,7 @@ server <- function(input, output, session) {
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
                                                         "La estrella", "San Jeronimo", "Caldas", "Copacabana", 
-                                                        "San Antonio Pr","Bogota","Rionegro","La Ceja", "Marinilla")) +                                            
+                                                        "San Antonio Pr","Bogota","Rionegro","La Ceja", "Marinilla", "Guarne")) +                                            
         
         geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
@@ -901,7 +904,7 @@ server <- function(input, output, session) {
     if (input$var7=='Activos'){
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc  %>%
-        select(CentroCostos, Total.c, Vr.Canon) %>%
+        dplyr::select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(5)
@@ -911,7 +914,7 @@ server <- function(input, output, session) {
     else{
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc1  %>%
-        select(CentroCostos, Total.c, Vr.Canon) %>%
+        dplyr::select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(2)
@@ -925,7 +928,7 @@ server <- function(input, output, session) {
     if (input$var7=='Activos'){
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc %>%
-        select(CentroCostos, Total.c, Vr.Canon) %>%
+        dplyr::select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(7)
@@ -1097,4 +1100,6 @@ server <- function(input, output, session) {
 }
 
 #Definición de la aplicación
+
 shinyApp(ui = ui, server = server)
+
