@@ -54,7 +54,7 @@ localizaciones_join<-localizaciones_join %>%
   group_by(conector)%>%
   summarise(localizaciones.lat=mean(localizaciones.lat),
             localizaciones.long=mean(localizaciones.long))
-  
+
 
 datos_completos$conector<-paste(datos_completos$Direcciones_prueba,
                                 datos_completos$Ciudad,sep=' ')
@@ -350,8 +350,8 @@ server <- function(input, output, session) {
   output$top_desc<-DT::renderDataTable({
     direccion_unique %>%
       dplyr::filter(direccion_unique$Nombre_del_Lugar!='' &
-               (is.null(input$var5) |
-                  is.element(direccion_unique$Centro_de_Costos, input$var5) ))%>%
+                      (is.null(input$var5) |
+                         is.element(direccion_unique$Centro_de_Costos, input$var5) ))%>%
       dplyr::select(c(Nombre_del_Lugar,Direcciones_c,Centro_de_Costos,Total_de_apartamentos) ) %>%
       dplyr::arrange(desc(Total_de_apartamentos) ) 
     
