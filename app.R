@@ -202,10 +202,10 @@ ui <- fluidPage(
                          column(width = 8, tags$img(src="image.png", width =400 , height = 200,alt ="Something went wrong",deleteFile=FALSE),
                                 align = "center"),
                          column(width = 4, tags$br() ,
-                                tags$p(" Son 5871 inmuebles controlados por los diferentes Centros de costos , 
-                                     según los datos 31 de estos inmuebles están bloqueados o desactivados,
-                                     es decir, existen 5840 inmuebles activos distribuidos por los centros 
-                                     de costos; Los Colores maneja 1087 de estos inmuebles y Laureles 887 inmuebles. ")
+                                tags$p(" Son 5915 inmuebles controlados por los diferentes Centros de costos , 
+                                     según los datos 93 de estos inmuebles están bloqueados o desactivados,
+                                     es decir, existen 5822 inmuebles activos distribuidos por los centros 
+                                     de costos; Los Colores maneja 1080 de estos inmuebles y Laureles 886 inmuebles. ")
                          )
                        )
                        
@@ -311,7 +311,8 @@ server <- function(input, output, session) {
                                          "BOGOTÃ, D.C.",
                                          "LA CEJA",
                                          "MARINILLA",
-                                         "GUARNE"
+                                         "GUARNE",
+                                         "FUNZA"
     ) ) 
     ) %>%
     st_transform(crs = 3857)
@@ -319,6 +320,7 @@ server <- function(input, output, session) {
   area_metropolitana$shapeName<-c("CALDAS_NO",# no son de antioquia
                                   "GUARNE",
                                   "MARINILLA",
+                                  "FUNZA",
                                   "RIONEGRO_NO",
                                   "ENVIGADO",
                                   "ITAGUI",
@@ -770,7 +772,7 @@ server <- function(input, output, session) {
         
         scale_fill_discrete(name = "Ciudad", labels = c("Medellin", "Sabaneta", "Envigado", "Itagui", "Bello", 
                                                         "La estrella", "San Jeronimo", "Caldas", "Copacabana",
-                                                        "San Antonio Pr","Bogota","Rionegro", "La Ceja", "Marinilla", "Guarne")) +                                            
+                                                        "San Antonio Pr","Bogota","Rionegro", "La Ceja", "Marinilla", "Guarne","Funza")) +                                            
         
         geom_text(aes(label=Var_prop),  
                   vjust=1.3,                         
@@ -908,6 +910,7 @@ server <- function(input, output, session) {
         arrange(desc((Total.c))) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(5)
+
       
       
     }
@@ -931,7 +934,7 @@ server <- function(input, output, session) {
         dplyr::select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
-        head(7)
+        head(9)
       
     }
     else{
@@ -940,7 +943,7 @@ server <- function(input, output, session) {
         select(CentroCostos, Total.c, Vr.Canon) %>%
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
-        head(7)
+        head(9)
     } 
     
   })
@@ -969,7 +972,7 @@ server <- function(input, output, session) {
         select(Ciudad, Total.ciudad, Vr.Canon) %>%
         arrange(desc((Total.ciudad))) %>%
         dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(1) 
+        head(11) 
     }
   })
   
