@@ -2,7 +2,6 @@
 library(DT)
 library(sf)
 library(sp)
-library(maps)
 library(png)
 library(tmap) # Actualizada
 library(dplyr)
@@ -11,7 +10,6 @@ library(shiny)# Libreria Shiny
 library(tidyr)
 library(ggtext)
 library(plotly)
-library(raster)
 library(ggplot2)
 library(stringr)
 library(ggthemes)
@@ -262,7 +260,8 @@ ui <- fluidPage(
                                 fluidPage(
                                   fluidRow(
                                     br(),
-                                    withSpinner(tmapOutput( outputId = "map_plot"))),br(),
+                                     withSpinner(tmapOutput( outputId = "map_plot"))
+                                    ),br(),
                                   actionButton("reset_input", "Base de Datos", icon("location-dot"), 
                                                style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
                                   br(),br(),
@@ -273,7 +272,8 @@ ui <- fluidPage(
                                 )),
                        tabPanel(title="Bloqueados",
                                 fluidPage(fluidRow(br(),
-                                                   withSpinner(tmapOutput(outputId = "map_plot_b"))),br(),
+                                                    withSpinner(tmapOutput(outputId = "map_plot_b"))
+                                                   ),br(),
                                           actionButton("reset_input_b", "Base de Datos", icon("location-dot"), 
                                                        style="color: #fff; background-color:  #3c8dbc; border-color: #2e6da4"),
                                           br(),br(),
@@ -375,29 +375,29 @@ server <- function(input, output, session) {
       direcciones_sf_filtro<-direcciones_sf
     }
     else{
-      direcciones_sf_filtro<-direcciones_sf[is.element(direcciones_sf$Centro_de_Costos,input$var5),]      
+      direcciones_sf_filtro<-direcciones_sf[is.element(direcciones_sf$Centro_de_Costos,input$var5),]
     }
     if(is.null(input$var6)){
       columnas_mostrar<-c4
     }
     else{
       columnas_mostrar<-input$var6
-      
+
     }
-    # Mapa del aréa metropolitana con los inmuebles 
+    # Mapa del aréa metropolitana con los inmuebles
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)+
       tmap_options(max.categories = 34)
-    
-  })  
+
+  })
   observeEvent(input$map_plot_marker_click,{
     output$data_filtro<- DT::renderDataTable({
       click<-input$map_plot_marker_click
       direccion_print<-direccion_unique[paste('X',direccion_unique$Indice,sep="")==click$id ,
                                         'Direcciones_c']
-      datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]  
-      datos_print    
+      datos_print<- datos[datos$Direcciones_c==direccion_print$Direcciones_c,]
+      datos_print
     }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
                       initComplete = JS(
                         "function(settings, json) {",
@@ -410,7 +410,7 @@ server <- function(input, output, session) {
     style = 'bootstrap',
     class = 'cell-border stripe',
     rownames = FALSE )
-    
+
   })
   observeEvent(input$reset_input,{
     output$data_filtro<- DT::renderDataTable({
@@ -428,7 +428,7 @@ server <- function(input, output, session) {
     class = 'cell-border stripe',
     rownames = FALSE)
   })
-  
+
   
   # Pasar los datos a formato sf tomando algunos datos bloqueados
   direcciones_sf_b <- direccion_unique_b %>% 
@@ -436,22 +436,22 @@ server <- function(input, output, session) {
     st_set_crs(value = 4326) %>%
     st_transform(crs = 3857) %>%
     st_intersection(area_metropolitana)
-  
+
   output$map_plot_b<-renderTmap({
     if (is.null(input$var5) ){
       direcciones_sf_filtro_b<-direcciones_sf_b
     }
     else{
-      direcciones_sf_filtro_b<-direcciones_sf_b[is.element(direcciones_sf_b$Centro_de_Costos,input$var5),]      
+      direcciones_sf_filtro_b<-direcciones_sf_b[is.element(direcciones_sf_b$Centro_de_Costos,input$var5),]
     }
     if(is.null(input$var6)){
       columnas_mostrar<-c4
     }
     else{
       columnas_mostrar<-input$var6
-      
+
     }
-    # Mapa del aréa metropolitana con los inmuebles 
+    # Mapa del aréa metropolitana con los inmuebles
     tmap_mode('view') %>%
       tm_shape(shp = direcciones_sf_filtro_b)+ # coordenadas lat long
       tm_dots(size = 0.05,col = "Centro_de_Costos",popup.vars=columnas_mostrar)+
@@ -462,7 +462,7 @@ server <- function(input, output, session) {
       click<-input$map_plot_b_marker_click
       direccion_print_b<-direccion_unique_b[paste('X',direccion_unique_b$Indice,sep="")==click$id ,
                                             'Direcciones_c']
-      datos_print_b<- datos_b[datos_b$Direcciones_c==direccion_print_b$Direcciones_c,]  
+      datos_print_b<- datos_b[datos_b$Direcciones_c==direccion_print_b$Direcciones_c,]
       datos_print_b
     }, options = list(scrollX = TRUE,lengthMenu=list(c(5,15,20),c('5','15','20')),pageLength=10,
                       initComplete = JS(
@@ -476,7 +476,7 @@ server <- function(input, output, session) {
     style = 'bootstrap',
     class = 'cell-border stripe',
     rownames = FALSE )
-    
+
   })
   observeEvent(input$reset_input_b,{
     output$data_filtro_b<- DT::renderDataTable({
@@ -494,9 +494,9 @@ server <- function(input, output, session) {
     class = 'cell-border stripe',
     rownames = FALSE)
   })
-  
-  
-  
+
+
+
   
   # reactive values for map
   
@@ -906,18 +906,16 @@ server <- function(input, output, session) {
     if (input$var7=='Activos'){
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc  %>%
-        dplyr::select(CentroCostos, Total.c, Vr.Canon) %>%
+        dplyr::select(CentroCostos, Total.c, Porcentaje, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
-        dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
+        #dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(5)
-
-      
       
     }
     else{
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc1  %>%
-        dplyr::select(CentroCostos, Total.c, Vr.Canon) %>%
+        dplyr::select(CentroCostos, Total.c, Porcentaje, Vr.Canon) %>%
         arrange(desc((Total.c))) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(2)
@@ -931,7 +929,7 @@ server <- function(input, output, session) {
     if (input$var7=='Activos'){
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc %>%
-        dplyr::select(CentroCostos, Total.c, Vr.Canon) %>%
+        dplyr::select(CentroCostos, Total.c, Porcentaje, Vr.Canon) %>%
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(9)
@@ -940,7 +938,7 @@ server <- function(input, output, session) {
     else{
       # Tabla total de cada ciudad y porcentajes por Centro de Costos
       tabla_centroc1 %>%
-        select(CentroCostos, Total.c, Vr.Canon) %>%
+        dplyr::select(CentroCostos, Total.c, Porcentaje, Vr.Canon) %>%
         arrange(Total.c) %>%
         dplyr::mutate(Porcentaje = round(Total.c/sum(Total.c)*100, 1)) %>%
         head(9)
@@ -962,17 +960,17 @@ server <- function(input, output, session) {
   output$top5.1 <- renderTable({
     if (input$var8=='Activos'){
       tabla_ciudad  %>%
-        select(Ciudad, Total.ciudad, Vr.Canon) %>%
+        dplyr::select(Ciudad, Total.ciudad,Porcentaje, Vr.Canon) %>%
         arrange(desc((Total.ciudad))) %>%
         dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(5)
+        head(6)
     }
     else{
       tabla_ciudad1  %>%
-        select(Ciudad, Total.ciudad, Vr.Canon) %>%
+        dplyr::select(Ciudad, Total.ciudad, Porcentaje, Vr.Canon) %>%
         arrange(desc((Total.ciudad))) %>%
         dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(11) 
+        head(2) 
     }
   })
   
@@ -980,14 +978,14 @@ server <- function(input, output, session) {
   output$low5 <- renderTable({
     if (input$var8=='Activos'){
       tabla_ciudad %>%
-        select(Ciudad, Total.ciudad, Vr.Canon) %>%
+        dplyr::select(Ciudad, Total.ciudad,Porcentaje, Vr.Canon) %>%
         arrange(Total.ciudad) %>%
         dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
-        head(6)
+        head(10)
     }
     else{
       tabla_ciudad1 %>%
-        select(Ciudad, Total.ciudad, Vr.Canon) %>%
+        dplyr::select(Ciudad, Total.ciudad,Porcentaje, Vr.Canon) %>%
         arrange(Total.ciudad) %>%
         dplyr::mutate(Porcentaje = round(Total.ciudad/sum(Total.ciudad)*100, 1)) %>%
         head(5)
@@ -1009,14 +1007,14 @@ server <- function(input, output, session) {
   output$top3 <- renderTable({
     if (input$var9=='Activos'){
       tabla_aseg  %>%
-        select(Aseguradora, Total.aseg, Vr.Canon) %>%
+        dplyr::select(Aseguradora, Total.aseg,Porcentaje, Vr.Canon) %>%
         arrange(desc((Total.aseg))) %>%
         dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
-        head(3)
+        head(5)
     }
     else{
       tabla_aseg1  %>%
-        select(Aseguradora, Total.aseg, Vr.Canon) %>%
+        dplyr::select(Aseguradora, Total.aseg,Porcentaje, Vr.Canon) %>%
         arrange(desc((Total.aseg))) %>%
         dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
         head(2)
@@ -1030,17 +1028,17 @@ server <- function(input, output, session) {
   output$low4 <- renderTable({
     if (input$var9=='Activos'){
       tabla_aseg  %>%
-        select(Aseguradora, Total.aseg, Vr.Canon) %>%
-        arrange((Total.aseg)) %>%
-        dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
-        head(4)
-    }
-    else{
-      tabla_aseg1  %>%
-        select(Aseguradora, Total.aseg, Vr.Canon) %>%
+        dplyr::select(Aseguradora, Total.aseg,Porcentaje,Vr.Canon) %>%
         arrange((Total.aseg)) %>%
         dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
         head(2)
+    }
+    else{
+      tabla_aseg1  %>%
+        dplyr::select(Aseguradora, Total.aseg, Porcentaje, Vr.Canon) %>%
+        arrange((Total.aseg)) %>%
+        dplyr::mutate(Porcentaje = round(Total.aseg/sum(Total.aseg)*100, 1)) %>%
+        head(4)
     }
   })
   
