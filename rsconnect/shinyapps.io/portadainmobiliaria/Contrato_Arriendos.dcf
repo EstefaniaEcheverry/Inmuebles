@@ -1,0 +1,14 @@
+name: Contrato_Arriendos
+title: Contrato_Arriendos
+username:
+account: portadainmobiliaria
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7831455
+bundleId: 6640539
+url: https://portadainmobiliaria.shinyapps.io/Contrato_Arriendos/
+when: 1671116160.69618
+lastSyncTime: 1671116160.6962
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: creacion_BD_.Rmd|Inmueble_Arriendo.Rmd|manipulacion_datos.R|Prueba_inmuebles.Rmd|data|data_orden
