@@ -28,8 +28,8 @@ mapa_inmuebles <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
                                   "MARINILLA",
                                   "GUARNE",
                                   "FUNZA"
-    ) ) 
-    ) %>%
+    ) )
+    )%>%
     st_transform(crs = 3857)
   # Cambiandoles los nombres por como se escribe
 mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia
