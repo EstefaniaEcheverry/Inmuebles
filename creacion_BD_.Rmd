@@ -12,6 +12,25 @@ library(readxl) # leer archivos xls
 library(stringr) # manipulacion direcciones
 library(tidygeocoder) # geocodificacion de direcciones
 library(sf)
+<<<<<<< HEAD
+# Load shapefile
+mapa_inmuebles <- read_sf("mapa/geoBoundaries-COL-ADM2.shp")%>%
+    dplyr::filter(is.element(shapeName,c("Medellín", # para adm_lvl =2 los municipios
+                                  "Bello",    # estan en mayuscula y no estan
+                                  "Copacabana",# en UTF-8 
+                                  "Envigado",
+                                  "Caldas", # hay dos caldas en colombia
+                                  "Itagüí", # itagui
+                                  "La Estrella", 
+                                  "Sabaneta",
+                                  "San Jerónimo",
+                                  "Rionegro",
+                                  "Bogotá, D.C.",
+                                  "La Ceja",
+                                  "Marinilla",
+                                  "Guarne",
+                                  "Funza"
+=======
 mapa_inmuebles <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
     dplyr::filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
                                   "BELLO",    # estan en mayuscula y no estan
@@ -28,6 +47,7 @@ mapa_inmuebles <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
                                   "MARINILLA",
                                   "GUARNE",
                                   "FUNZA"
+>>>>>>> parent of a17404f (Actual)
     ) )
     )%>%
     st_transform(crs = 3857)
