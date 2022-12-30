@@ -12,7 +12,6 @@ library(readxl) # leer archivos xls
 library(stringr) # manipulacion direcciones
 library(tidygeocoder) # geocodificacion de direcciones
 library(sf)
-<<<<<<< HEAD
 # Load shapefile
 mapa_inmuebles <- read_sf("mapa/geoBoundaries-COL-ADM2.shp")%>%
     dplyr::filter(is.element(shapeName,c("Medellín", # para adm_lvl =2 los municipios
@@ -30,45 +29,29 @@ mapa_inmuebles <- read_sf("mapa/geoBoundaries-COL-ADM2.shp")%>%
                                   "Marinilla",
                                   "Guarne",
                                   "Funza"
-=======
-mapa_inmuebles <- geoboundaries(country = "COLOMBIA", adm_lvl = 2)%>%
-    dplyr::filter(is.element(shapeName,c("MEDELLÃN", # para adm_lvl =2 los municipios
-                                  "BELLO",    # estan en mayuscula y no estan
-                                  "COPACABANA",# en UTF-8 
-                                  "ENVIGADO",
-                                  "CALDAS", # hay dos caldas en colombia
-                                  "ITAGÃœÃ", # itagui
-                                  "LA ESTRELLA", 
-                                  "SABANETA",
-                                  "SAN JERÃ“NIMO",
-                                  "RIONEGRO",
-                                  "BOGOTÃ, D.C.",
-                                  "LA CEJA",
-                                  "MARINILLA",
-                                  "GUARNE",
-                                  "FUNZA"
->>>>>>> parent of a17404f (Actual)
     ) )
     )%>%
     st_transform(crs = 3857)
-  # Cambiandoles los nombres por como se escribe
-mapa_inmuebles$shapeName<-c("CALDAS_NO",# no son de antioquia
-                            "GUARNE",
-                            "MARINILLA",
-                            "FUNZA",
-                            "RIONEGRO_NO",
+  
+# Cambiandoles los nombres por como se escribe
+mapa_inmuebles$shapeName<-c("MEDELLIN",# no son de antioquia
+                            "BELLO",
+                            "CALDAS",
+                            "COPACABANA",
                             "ENVIGADO",
+                            "GUARNE",
                             "ITAGUI",
                             "LA CEJA",
-                            "CALDAS",
-                            "SAN JERONIMO",
-                            "RIONEGRO" ,
-                            "BOGOTA",
-                            "MEDELLIN",
-                            "COPACABANA",
-                            "BELLO",
+                            "LA ESTRELLA",
+                            "MARINILLA",
+                            "RIONEGRO",
                             "SABANETA",
-                            "LA ESTRELLA"
+                            "SAN JERONIMO",
+                            "BOGOTA",
+                            "CALDAS_NO",
+                            "FUNZA",
+                            "RIONEGRO_NO"
+                            
   )
 ```
 
@@ -93,7 +76,6 @@ palabras_inter <- c("CONJ","CONJUNTO","CONJUTO","COJUNTO", "CRUCERO", "URBANIZAC
 # Palabras a eliminar de las direcciones 
 palabras_eliminar <-c("AP", "INT","BL","CASA", "CS","IN", "APT", "OF", "TO","CA","PH","VISIT", "ETAPA", "APTOS","BRR","PISO","LO", "P.H", "CONS","CONJUN" ,"PRIMER","PI","CUAR","P 1", "CON", "ET", "COL","GUAYA")
 ```
-
 
 
 # Funciones de manipulacion de texto
@@ -274,7 +256,7 @@ Esta transoformara los datos actualizados al formato que se trabaja en la app
 
 ```{r Lectura de datos}
 #######################################################################################
-file_actual<-"data_orden/Datos Dia/BaseDatosInmueblesPortada20-12-2022.xls"
+file_actual<-"data_orden/Datos Dia/BaseDatosInmueblesPortada30-12-2022.xls"
 # Lectura de datos
 inmuebles <- read_excel(file_actual)
 # Seleccionar solo los sectores de interes
@@ -405,21 +387,7 @@ z<-as.data.frame( localizaciones_sf[localizaciones_sf$shapeName!=localizaciones_
 ```
 
 
-# Remplazando geocodificaciones
-
-```{r}
-localizaciones<-read.csv2("BD/localizacion_inmuebles.csv",header=T)
-filtro_prueba<- localizaciones$localizaciones.lat == 6.34034 & localizaciones$localizaciones.long== -75.55916
-addres_new<-paste(localizaciones[filtro_prueba,]$Direcciones_prueba,localizaciones[filtro_prueba,]$Ciudad,'Colombia',sep=',')
-sum(filtro_prueba)
-localizaciones_mod<- tidygeocoder::geocode(data.frame(X= addres_new),'X',  method = "arcgis" )
-localizaciones[filtro_prueba,]$localizaciones.lat<-localizaciones_mod$lat
-localizaciones[filtro_prueba,]$localizaciones.long<-localizaciones_mod$long
-write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
-```
-
-
-En proceso
+# Arregla las direcciones que no se geocodificaron bien y las pone en otro lugar
 
 ```{r}
 
@@ -445,30 +413,4 @@ for (i in localizaciones_corr$addres_temp){
 write.csv2(x = localizaciones, file = "BD/localizacion_inmuebles.csv", row.names = F, fileEncoding = "UTF-8")
 
 ```
-```{r}
-files <- list.files("C:/Users/ESTADISTA_2/Documents/Portada Inmobiliaria/Inmuebles_Arrendados/data_orden/Datos Dia")
-file_ <- files[1]
-file_
-fecha<-strsplit( file_, "Portada")[[1]][2]
-fecha
-strsplit(fecha, ".xls" )[[1]][1]
-primer <- read_excel(paste("C:/Users/ESTADISTA_2/Documents/Portada Inmobiliaria/Inmuebles_Arrendados/data_orden/Datos Dia",file_, sep = "/"))
-# Seleccionar solo los sectores de interes
-centro_costos_codigo<-c("01","02","03","04","08","09","10","11","12","19","22","25","26","28")
-primer <- primer[is.element(primer$CentroCostos, 
-                                         centro_costos_codigo ), ]
-
-#########################
-centro_costos_nombres<- c("Laureles","Sabaneta","Poblado",
-                          "Colores","Envigado","Itagui",
-                          "Centro","Bello","La estrella", 
-                          "San Antonio Pr." , "Calasanz",
-                          "Fontibon")
-primer$NoCCostos<-as.numeric(primer$CentroCostos)
-primer$CentroCostos <- factor(primer$CentroCostos,
-                                   labels = centro_costos_nombres)
-
-primer %>% group_by(CentroCostos) %>% summarise()
-```
-
 
